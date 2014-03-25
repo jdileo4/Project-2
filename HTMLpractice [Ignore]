@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+<h1>HTML Practice</h1>
+<h2>Bitris</h2>
+
+<!-- FOR BLOCKS -->
+<!-- z-index: preferably greater than grid index -->
+<!-- square positions follow increments 26 beginning from top-left -->
+<!-- top-left= left:9px; top:128 px -->
+<!-- NOTE: positions vary between blocks based on height/width -->
+
+<!-- GRID -->
+<div style="position: absolute; z-index:1;">
+<img src="http://i57.photobucket.com/albums/g220/aezakard/Grid_zps51d116bd.png" border="0" alt="13x13 grid"/>
+</div>
+
+<!-- Z BLOCK -->
+<div style="position: absolute; z-index:2; left:9px; top:128px;">
+<img src="http://i57.photobucket.com/albums/g220/aezakard/Z1_zps07d3041c.png" border="0" alt="Z block"/>
+</div>
+
+<!-- O BLOCK -->
+<div style="position: absolute; z-index:2; left:191px; top:128px;">
+<img src="http://i57.photobucket.com/albums/g220/aezakard/O1_zps77c8f051.png" border="0" alt="O block"/>
+</div>
+
+<!-- S BLOCK -->
+<div style="position: absolute; z-index:2; left:347px; top:128px;">
+<img src="http://i57.photobucket.com/albums/g220/aezakard/S1_zps9e280d12.png" border="0" alt="S block"/>
+</div>
+
+<!-- I BLOCK 1 -->
+<div style="position: absolute; z-index:2; left:9px; top:258px;">
+<img src="http://i57.photobucket.com/albums/g220/aezakard/I2_zps4f88d560.png" border="0" alt="I block";/>
+</div>
+
+<!-- I BLOCK 2 -->
+<div style="position: absolute; z-index:2; left:399px; top:258px;">
+<img src="http://i57.photobucket.com/albums/g220/aezakard/I2_zps4f88d560.png" border="0" alt="I block";/>
+</div>
+
+<!-- L BLOCK -->
+<div style="position: absolute; z-index:2; left:9px; top:466px;">
+<img src="http://i57.photobucket.com/albums/g220/aezakard/L1_zpseb11ac32.png" border="0" alt="L block"/>
+</div>
+
+<!-- T BLOCK -->
+<div style="position: absolute; z-index:2; left:165px; top:492px;">
+<img src="http://i57.photobucket.com/albums/g220/aezakard/T1_zpsc4db3f6b.png" border="0" alt="T block"/>
+</div>
+
+<!-- J BLOCK -->
+<div style="position: absolute; z-index:2; left:373px; top:466px;">
+<img src="http://i57.photobucket.com/albums/g220/aezakard/J1_zps046d81f9.png" border="0" alt="J block"/>
+</div>
+
+</body>
+</html>
