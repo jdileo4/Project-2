@@ -31,12 +31,12 @@
 <img src="http://i57.photobucket.com/albums/g220/aezakard/S1_zps9e280d12.png" border="0" alt="S block"/>
 </div>
 
-<!-- I BLOCK 1 -->
+<!-- I BLOCK -->
 <div style="position: absolute; z-index:2; left:9px; top:258px;">
 <img src="http://i57.photobucket.com/albums/g220/aezakard/I2_zps4f88d560.png" border="0" alt="I block";/>
 </div>
 
-<!-- I BLOCK 2 -->
+<!-- I BLOCK -->
 <div style="position: absolute; z-index:2; left:399px; top:258px;">
 <img src="http://i57.photobucket.com/albums/g220/aezakard/I2_zps4f88d560.png" border="0" alt="I block";/>
 </div>
