@@ -7,10 +7,11 @@ var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
 
 // Allows access to local file system.
-var fs = require('fs')
+var fs = require('fs');
+
 
 // Listen on a high port.
-app.listen(10001);
+app.listen(20202);
 
 // Handles HTTP requests.
 function handler(request, response) {
@@ -18,7 +19,7 @@ function handler(request, response) {
   // argument) to process the content of the file.
   // __dirname is a preset variable pointing to the folder of this file.
   fs.readFile(
-    __dirname + '/index.html',
+    __dirname + '/../index.html',
     function(err, content) {
       if (err) {
         // If an error happened when loading 'index.html', return a 500 error.
