@@ -1,77 +1,206 @@
-<!DOCTYPE html>
-<html>
+<!--
+This page implements a simple chat room client, to illustrate WebSocket with
+socket.io and node.js.
+-->
 
-<body>
-<h1>HTML Practice</h1>
-<h2>Bitris</h2>
+<style>
+body {
+  font-family: sans-serif;
+}
 
-<!-- DID THIS CHANGE? Testing from Eclipse -->
+#status {
+  font-size: 14pt;
+  color: gray;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
 
-<!-- FOR BLOCKS -->
-<!-- z-index: preferably greater than grid index -->
-<!-- square positions follow increments 26 beginning from top-left -->
-<!-- top-left= left:9px; top:128 px -->
-<!-- NOTE: positions vary between blocks based on height/width -->
+#board {
+  width: 800px;
+  height: 600px;
+  border: 1px solid gray;
+  padding: 3px;
+}
 
-<!-- GRID -->
-<div style="position: absolute; z-index:1;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/Grid_zps51d116bd.png" border="0" alt="13x13 grid"/>
+#board div {
+  margin-top: 5px;
+}
+
+#msg {
+  width: 740px;
+  margin-right: 10px;
+}
+
+#send {
+  width: 50px;
+}
+
+#login_section, #chat_section {
+  display: none;
+}
+
+.user_name {
+  font-size: 10pt;
+  font-weight: bold;
+  color: blue;
+}
+
+.says {
+  font-size: 10pt;
+  color: gray;
+}
+
+.msg {
+  font-size: 12pt;
+  font-family: serif;
+}
+
+.notification {
+  color: green;
+}
+</style>
+
+<!--
+jQuery is a JavaScript library that provides many handy tools, e.g. for
+manipulating HTML elements, handling events, etc.
+-->
+<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+
+<!--
+socket.io.js will be provided by the node.js server that you will run.
+-->
+<script src="/socket.io/socket.io.js"></script>
+
+<div id="warning">
+  JavaScript is required to run this app.
 </div>
 
-<!-- Z1 BLOCK -->
-<div style="position: absolute; z-index:2; left:9px; top:128px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/Z1_zps07d3041c.png" border="0" alt="Z block"/>
+<div id="login_section">
+  <div id="status">Connecting to the chat room ...</div>
+  Your name:
+  <input id="name" type="text"></input>
+  <input id="login" type="button" value="Log In" disabled="true"></input>
 </div>
 
-<!-- Z2 BLOCK -->
-<div style="position: absolute; z-index:2; left:113px; top:128px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/Z2_zpscdb4684b.png" border="0" alt="Z block"/>
+<div id="chat_section">
+  <div id="board">
+  </div>
+  <input id="msg" type="text"></input>
+  <input id="send" type="button" value="Send"></input>
 </div>
 
-<!-- O BLOCK -->
-<div style="position: absolute; z-index:2; left:191px; top:128px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/O1_zps77c8f051.png" border="0" alt="O block"/>
-</div>
+<script>
+  // $(document) returns a jQuery object representing the whole document (page).
+  // $(document).ready(fn) tells jQuery to call function 'fn' after the whole
+  // document is loaded.
+  $(document).ready(function() {
+    // Hide the warning section and show the login section.
+    $('#warning').css('display', 'none');
+    $('#login_section').css('display', 'block');
 
-<!-- S2 BLOCK -->
-<div style="position: absolute; z-index:2; left:269px; top:128px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/S2_zps33fd1748.png" border="0" alt="S block"/>
-</div>
+    // Initialize socket.io.
+    // document.location.host returns the host of the current page.
+    var socket = io.connect('http://' + document.location.host);
 
-<!-- S1 BLOCK -->
-<div style="position: absolute; z-index:2; left:347px; top:128px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/S1_zps9e280d12.png" border="0" alt="S block"/>
-</div>
+    // If a welcome message is received, it means the chat room is available.
+    // The Log In button will be then enabled.
+    socket.on(
+      'welcome',
+      function(message) {
+        $('#status').text(message);
+        $('#login').attr('disabled', false);
+      });
 
-<!-- I1 BLOCK -->
-<div style="position: absolute; z-index:2; left:9px; top:206px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/I1_zpsa2329f3f.png" border="0" alt="I block";/>
-</div>
+    // If a login_ok message is received, proceed to the chat section.
+    socket.on(
+      'login_ok',
+      function() {
+        $('#login_section').css('display', 'none');
+        $('#chat_section').css('display', 'block');
+        $('#status').text('Logged In.');
+      });
 
-<!-- I2 BLOCK -->
-<div style="position: absolute; z-index:2; left:9px; top:258px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/I2_zps4f88d560.png" border="0" alt="I block";/>
-</div>
+    // If a login_failed message is received, stay in the login section but
+    // display an error message.
+    socket.on(
+      'login_failed',
+      function() {
+        $('#status').text('Failed to log in!');
+      });
 
-<!-- L1 BLOCK -->
-<div style="position: absolute; z-index:2; left:87px; top:258px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/L1_zpseb11ac32.png" border="0" alt="L block"/>
-</div>
+    // If a chat message is received, display it.
+    socket.on(
+      'chat',
+      function(message) {
+        if (message && message.user_name && message.msg) {
+          var user_name = message.user_name;
+          var msg = message.msg;
+          // This will create a div element using the HTML code:
+          var div = $('<div></div>');
+          // Similarly, create span elements with CSS classes and corresponding
+          // contents, and append them in a row to the new div element.
+          div.append($('<span></span>').addClass('user_name').text(user_name));
+          div.append($('<span></span>').addClass('says').text(' says: '));
+          div.append($('<span></span>').addClass('msg').text(msg));
+          // Add the new div element to the chat board.
+          $('#board').append(div);
+        }
+      });
 
-<!-- L2 BLOCK -->
-<div style="position: absolute; z-index:2; left:191px; top:258px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/L2_zpsb6f41267.png" border="0" alt="L block"/>
-</div>
+    // If a notification is received, display it.
+    socket.on(
+      'notification',
+      function(message) {
+        if (message) {
+          // Similar to the handler of 'chat' event ...
+          var div = $('<div></div>');
+          div.append($('<span></span>').addClass('notification').text(message));
+          $('#board').append(div);
+        }
+      });
 
-<!-- T BLOCK -->
-<div style="position: absolute; z-index:2; left:165px; top:492px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/T1_zpsc4db3f6b.png" border="0" alt="T block"/>
-</div>
+    // When the Log In button is clicked, the provided function will be called,
+    // which sends a login message to the server.
+    $('#login').click(function() {
+      var name = $('#name').val();
+      if (name) {
+        name = name.trim();
+        if (name.length > 0) {
+          socket.emit('login', { user_name: name });
+        }
+      }
+      // Clear the input field.
+      $('#name').val('');
+    });
 
-<!-- J BLOCK -->
-<div style="position: absolute; z-index:2; left:373px; top:466px;">
-<img src="http://i57.photobucket.com/albums/g220/aezakard/J1_zps046d81f9.png" border="0" alt="J block"/>
-</div>
+    // When Enter is pressed in the name field, it should be treated as clicking
+    // on the Log In button.
+    $('#name').keyup(function(event) {
+      if (event.keyCode == 13) {
+        $('#login').click();
+      }
+    });
 
-</body>
-</html>
+    // When the Log In button is clicked, the provided function will be called,
+    // which sends a chat message to the server.
+    $('#send').click(function() {
+      var data = $('#msg').val();
+      if (data) {
+        data = data.trim();
+        if (data.length > 0) {
+          socket.emit('chat', { msg: data });
+        }
+      }
+      // Clear the input field.
+      $('#msg').val('');
+    });
+
+    // When Enter is pressed in the message field, it should be treated as
+    // clicking on the Send button.
+    $('#msg').keyup(function(event) {
+      if (event.keyCode == 13) {
+        $('#send').click();
+      }
+    });
+  });
+</script>
