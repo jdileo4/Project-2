@@ -89,14 +89,14 @@
 			}
 			if(event.keyCode == 39){
 				// right
-				if(x+1 <= 15) {lastX = x; lastY = y; x++; }
+				if(x+1 <= 16) {lastX = x; lastY = y; x++; }
 				updateDEBUG();
 				//emit event right
 				io.sockets.emit('moveRight');
 			}
 			if(event.keyCode == 40){
 				// down
-				if(y+1 <= 15) {lastX = x; lastY = y; y++;}
+				if(y+1 <= 16) {lastX = x; lastY = y; y++;}
 				updateDEBUG();
 				//emit event down
 				io.sockets.emit('moveDown');
