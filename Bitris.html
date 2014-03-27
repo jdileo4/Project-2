@@ -30,18 +30,40 @@
 			width: 10px;
 			height: 10px;
 		}
+		.options{
+			padding: 5px;
+			width: 600px;
+		}
 	</style>
 	<script>
+		//temporary local global vars to facilitate movement of 1x1
 		var x = 0;
 		var y = 0;
 		var lastX = 0;
 		var lastY = 0;
-		
+		//called from body tag; happens on load
+		function onLoadFunction(){
+			//temporary filling enemy grid function.
+			for(var i=0; i<16; i++){
+				for(var j=0; j<16; j++){
+					var randomnumber = Math.floor(Math.random()*10)
+					if(randomnumber > 0){
+						document.getElementById("e" + i + "," + j).src = "tetrisenemy.png";
+					}
+				}
+			}
+			//todo: replace with timed function which refreshes to check on user.
+			document.getElementById("options").innerHTML = "Nobody else is online right now.";
+			//temporary (clientonly) check to the debug function
+			updateDEBUG();
+		}
+		//temporary (clientonly) updater for local 1x1 piece movement
 		function updateDEBUG(){
-			document.getElementById("f" + lastY + "," + lastX).src = "";
-			document.getElementById("f" + y + "," + x).src = "tetrisblue.png";
+			document.getElementById("f" + lastX + "," + lastY).src = "";
+			document.getElementById("f" + x + "," + y).src = "tetrisblue.png";
 			document.getElementById("DEBUG").innerHTML = "Current loc: (" + x + "," + y + ") --- Last loc: (" + lastX + "," + lastY + ")";
 		}
+		//handles the keystrokes by the keyboard; invoked by body tag
 		function processKeystroke(){
 			var event = window.event ? window.event : e;
 			
@@ -74,35 +96,40 @@
 		}
 	</script>
 </head>
-<body onkeydown="processKeystroke()" onload="updateDEBUG()">
+<body onkeydown="processKeystroke()" onload="onLoadFunction()">
+	<!-- title -->
 	<img src='bitrislogo.png' />
 	<br>
 	<br>
+	<!-- overarching table to make sure tables are side by side (invisible) -->
 	<table class='nodisp'>
 		<tr class='nodisp'>
 			<td class='nodisp'>
+				<!-- create a table for player/team, give them IDs according to grid number (form of: f5,12 ) -->
 				<table>
 					<script>
 						for(var i=0; i<16; i++){
 							document.write("<tr>");
 							for(var j=0; j<16; j++){
-								document.write("<td class='friendly'><img class='friendly' id='f" + i + "," + j + "' src='' /></td>");
+								document.write("<td class='friendly'><img class='friendly' id='f" + j + "," + i + "' src='' /></td>");
 							}
 							document.write("</tr>");
 						}
 					</script>
 				</table>
 			</td>
+			<!-- leave a bit of space in between -->
 			<td class='nodisp'>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="400vr.png" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			</td>
 			<td class='nodisp'>
+				<!-- create a table for enemy/team, give them IDs according to grid number (form of: e5,12 ) -->
 				<table>
 					<script>
 						for(var i=0; i<16; i++){
 							document.write("<tr>");
 							for(var j=0; j<16; j++){
-								document.write("<td class='enemy'><img class='enemy' id='e" + i + "," + j + "' src='' /></td>");
+								document.write("<td class='enemy'><img class='enemy' id='e" + j + "," + i + "' src='' /></td>");
 							}
 							document.write("</tr>");
 						}
@@ -111,6 +138,20 @@
 			</td>
 		</tr>
 	</table>
+	<br>
+	<table class='options'>
+		<tr>
+			<td width='30%'>
+				<!-- message side of options box, can be updated through JS -->
+				<span id="message"><b>Join a player!</b></span>
+			</td>
+			<td>
+				<!-- options/form side of options box, can be updated through JS -->
+				<span id="options"></span>
+			</td>
+		</tr>
+	</table>
+	<!-- edited by JS to provide debug info -->
 	<p id="DEBUG"></p>
 	</body>
 </html>
