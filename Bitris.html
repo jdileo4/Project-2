@@ -44,8 +44,8 @@
 		//called from body tag; happens on load
 		function onLoadFunction(){
 			//temporary filling enemy grid function.
-			for(var i=0; i<16; i++){
-				for(var j=0; j<16; j++){
+			for(var i=0; i<17; i++){
+				for(var j=0; j<17; j++){
 					var randomnumber = Math.floor(Math.random()*10)
 					if(randomnumber > 0){
 						document.getElementById("e" + i + "," + j).src = "tetrisenemy.png";
@@ -75,22 +75,22 @@
 			
 			if(event.keyCode == 37){
 				// left
-				if(x-1 >= 0) {lastX = x; lastY = y; x--;} 
+				if(x-1 > -1) {lastX = x; lastY = y; x--;} 
 				updateDEBUG();
 			}
 			if(event.keyCode == 38){
 				// up
-				if(y-1 >= 0) {lastX = x; lastY = y; y--; }
+				if(y-1 > -1) {lastX = x; lastY = y; y--; }
 				updateDEBUG();
 			}
 			if(event.keyCode == 39){
 				// right
-				if(x+1 <= 15) {lastX = x; lastY = y; x++; }
+				if(x+1 < 17) {lastX = x; lastY = y; x++; }
 				updateDEBUG();
 			}
 			if(event.keyCode == 40){
 				// down
-				if(y+1 <= 15) {lastX = x; lastY = y; y++;}
+				if(y+1 < 17) {lastX = x; lastY = y; y++;}
 				updateDEBUG();
 			}
 		}
@@ -108,9 +108,9 @@
 				<!-- create a table for player/team, give them IDs according to grid number (form of: f5,12 ) -->
 				<table>
 					<script>
-						for(var i=0; i<16; i++){
+						for(var i=0; i<17; i++){
 							document.write("<tr>");
-							for(var j=0; j<16; j++){
+							for(var j=0; j<17; j++){
 								document.write("<td class='friendly'><img class='friendly' id='f" + j + "," + i + "' src='' /></td>");
 							}
 							document.write("</tr>");
@@ -126,9 +126,9 @@
 				<!-- create a table for enemy/team, give them IDs according to grid number (form of: e5,12 ) -->
 				<table>
 					<script>
-						for(var i=0; i<16; i++){
+						for(var i=0; i<17; i++){
 							document.write("<tr>");
-							for(var j=0; j<16; j++){
+							for(var j=0; j<17; j++){
 								document.write("<td class='enemy'><img class='enemy' id='e" + j + "," + i + "' src='' /></td>");
 							}
 							document.write("</tr>");
