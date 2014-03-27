@@ -40,7 +40,7 @@ io.sockets.on(
   'connection',
   function(client) {
     // Send a welcome message first.
-    client.emit('welcome', 'Welcome to my chat room!');
+    client.emit('welcome', 'Welcome to Bitris!');
 
     // Listen to an event called 'login'. The client should emit this event when
     // it wants to log in to the chat room.
