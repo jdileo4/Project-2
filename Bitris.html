@@ -4,6 +4,10 @@
 	<style>
 		body{
 			text-align: center;
+			background-image:url('background2.jpg');
+			background-repeat: repeat;
+			font-family: arial;
+			color: white;
 		}
 		table,td{
 			border-collapse: collapse;
@@ -13,6 +17,9 @@
 		}
 		.nodisp{
 			border: none;
+		}
+		.friendly,.enemy{
+			background-color: white;
 		}
 		.friendly{
 			width: 25px;
@@ -31,15 +38,18 @@
 		
 		function updateDEBUG(){
 			document.getElementById("f" + lastY + "," + lastX).src = "";
-			document.getElementById("f" + y + "," + x).src = "tetrisblue.gif";
-			
+			document.getElementById("f" + y + "," + x).src = "tetrisblue.png";
 			document.getElementById("DEBUG").innerHTML = "Current loc: (" + x + "," + y + ") --- Last loc: (" + lastX + "," + lastY + ")";
 		}
 		function processKeystroke(){
 			var event = window.event ? window.event : e;
+			
+			//Uncomment this to get keycodes
+			//
 			//if (true) {
 			//	alert(event.keyCode)
 			//}
+			
 			if(event.keyCode == 37){
 				// left
 				if(x-1 >= 0) {lastX = x; lastY = y; x--;} 
@@ -64,7 +74,8 @@
 	</script>
 </head>
 <body onkeydown="processKeystroke()" onload="updateDEBUG()">
-	<h1>Bittris!</h1>
+	<img src='bitrislogo.png' />
+	<br>
 	<br>
 	<table class='nodisp'>
 		<tr class='nodisp'>
