@@ -9,7 +9,7 @@ var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
 
 // Allows access to local file system.
-var fs = require('fs')
+var fs = require('fs');
 
 // Listen on a high port.
 app.listen(30303);
@@ -98,13 +98,13 @@ var updateGlobalGrid = function()
 	{
 		for (var y = 0; y < 17; y++)
 		{
-			if ( player1Piece.lastLocations[0].x = x &&
-					player1Piece.lastLocations[0].y = y)
+			if ( player1Piece.lastLocations[0].x == x &&
+					player1Piece.lastLocations[0].y == y)
 			{
 				globalGrid[x][y] = 0;
 			}
-			if ( player1Piece.locations[0].x = x &&
-					player1Piece.locations[0].y = y)
+			if ( player1Piece.locations[0].x == x &&
+					player1Piece.locations[0].y == y)
 			{
 				globalGrid[x][y] = player1Piece.color;
 			}
@@ -125,7 +125,7 @@ socket.on(
 		//if 'moveLeft' came from player2
 		//player2Piece.moveLeft()
 		socket.broadcast.emit('syncUpdate', globalGrid);
-	};
+	}
 );
 
 
@@ -140,7 +140,7 @@ socket.on(
 		//if 'moveRight' came from player2
 		//player2Piece.moveRight()
 		socket.broadcast.emit('syncUpdate', globalGrid);
-	};
+	}
 );
 socket.on(
 	'moveDown',
@@ -152,7 +152,7 @@ socket.on(
 		//if 'moveDown' came from player2
 		//player2Piece.moveDown()
 		socket.broadcast.emit('syncUpdate', globalGrid);
-	};
+	}
 );
 
 
