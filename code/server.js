@@ -21,7 +21,7 @@ function handler(request, response) {
   // argument) to process the content of the file.
   // __dirname is a preset variable pointing to the folder of this file.
   fs.readFile(
-    __dirname + '/index.html',
+    __dirname + '/../index.html',
     function(err, content) {
       if (err) {
         // If an error happened when loading 'index.html', return a 500 error.
@@ -38,7 +38,11 @@ function handler(request, response) {
 //main code
 //-----------------------------------------
 
-var globalGrid = [][];
+//make 2 dimensional 17x17 array
+var globalGrid = new Array(17);
+  for (var i = 0; i < 17; i++) {
+    globalGrid[i] = new Array(17);
+  }
 
 var player1Piece = Piece();
 var player2Piece = Piece();
@@ -65,19 +69,44 @@ var updateGlobalGrid = function()
 }
 
 
-//listeners
+//listeners.............
 
 socket.on(
 	'moveLeft',
 	function()
 	{
-		player1Piece.moveLeft()
+	//how do we know which player is emitting this event?
+		//if 'moveLeft' came from player1
+		player1Piece.moveLeft();
+		//if 'moveLeft' came from player2
+		//player2Piece.moveLeft()
 		socket.broadcast.emit('syncUpdate', globalGrid);
 	};
 );
-
-
-
+socket.on(
+	'moveRight',
+	function()
+	{
+	//how do we know which player is emitting this event?
+		//if 'moveRight' came from player1
+		player1Piece.moveRight();
+		//if 'moveRight' came from player2
+		//player2Piece.moveRight()
+		socket.broadcast.emit('syncUpdate', globalGrid);
+	};
+);
+socket.on(
+	'moveDown',
+	function()
+	{
+	//how do we know which player is emitting this event?
+		//if 'moveDown' came from player1
+		player1Piece.moveDown();
+		//if 'moveDown' came from player2
+		//player2Piece.moveDown()
+		socket.broadcast.emit('syncUpdate', globalGrid);
+	};
+);
 
 
 //-------------------------------------------
@@ -111,6 +140,21 @@ Piece.prototype.moveLeft = function()
 {
 	this.lastLocations[0] = this.locations[0];
 	this.locations[0].x--;
+	updateGlobalGrid();
+}
+
+Piece.prototype.moveRight = function()
+{
+	this.lastLocations[0] = this.locations[0];
+	this.locations[0].x++;
+	updateGlobalGrid();
+}
+
+Piece.prototype.moveDown = function()
+{
+	this.lastLocations[0] = this.locations[0];
+	this.locations[0].y++;
+	//TODO reset clock
 	updateGlobalGrid();
 }
 
