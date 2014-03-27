@@ -21,7 +21,7 @@ function handler(request, response) {
   // argument) to process the content of the file.
   // __dirname is a preset variable pointing to the folder of this file.
   fs.readFile(
-    __dirname + '/../index.html',
+    __dirname + '/../Bitris.html',
     function(err, content) {
       if (err) {
         // If an error happened when loading 'index.html', return a 500 error.
@@ -33,6 +33,50 @@ function handler(request, response) {
       response.end(content);
     });
 }
+
+
+// Tells socket.io to listen to an event called 'connection'.
+// This is a built-in event that is triggered when a client connects to the
+// server. At that time, the function (the 2nd argument) will be called with an
+// object representing the client.
+
+//(when someone connects, add these event handlers to that client)
+io.sockets.on(
+  'connection',
+  function(client) {
+    // Send a welcome message first.
+    client.emit('welcome', 'Welcome to my chat room!');
+
+    // Listen to an event called 'login'. The client should emit this event when
+    // it wants to log in to the chat room.
+    client.on(
+      'login',
+      function(message) {
+        // This function extracts the user name from the login message, stores
+        // it to the client object, sends a login_ok message to the client, and
+        // sends notifications to other clients.
+        if (message && message.user_name) {
+          client.set('user_name', message.user_name);
+          client.emit('login_ok');
+          // client.broadcast.emits() will send to all clients except the
+          // current client. See socket.io FAQ for more examples.
+          client.broadcast.emit('notification',
+                                message.user_name + ' entered the room.');
+			
+			//added------------------------------
+			//adding piece to client
+			//TODO
+			
+          return
+        }
+        // When something is wrong, send a login_failed message to the client.
+        client.emit('login_failed');
+      });
+});
+
+
+
+
 
 //-----------------------------------------
 //main code
@@ -83,12 +127,15 @@ socket.on(
 		socket.broadcast.emit('syncUpdate', globalGrid);
 	};
 );
+
+
 socket.on(
 	'moveRight',
 	function()
 	{
 	//how do we know which player is emitting this event?
 		//if 'moveRight' came from player1
+		
 		player1Piece.moveRight();
 		//if 'moveRight' came from player2
 		//player2Piece.moveRight()
