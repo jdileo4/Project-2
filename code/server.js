@@ -11,6 +11,8 @@ var io = require('socket.io').listen(app);
 // Allows access to local file system.
 var fs = require('fs');
 
+var url = require('url');
+
 // Listen on a high port.
 app.listen(30303);
 
@@ -19,18 +21,43 @@ function handler(request, response) {
 	// This will read the file 'index.html', and call the function (the 2nd
 	// argument) to process the content of the file.
 	// __dirname is a preset variable pointing to the folder of this file.
-	fs.readFile(__dirname + '/../Bitris.html', function(err, content) {
+	var req = url.parse(request.url, true);
+	var action = req.pathname;
+	
+	if(action == '/'){
+		fs.readFile(__dirname + '/../Bitris.html', function(err, content) {
+			if (err) {
+				// If an error happened when loading 'Bitris.html', return a 500 error.
+				response.writeHead(500);
+				return response.end('Error loading Bitris.html!');
+			}
+			// If no error happened, return the content of 'Bitris.html'
+			response.writeHead(200, {
+				'Content-Type' : 'text/html'
+			});
+			response.end(content);
+		});
+	} else {
+		fs.readFile(__dirname + '/..' + action, function(err, content) {
 		if (err) {
 			// If an error happened when loading 'index.html', return a 500 error.
 			response.writeHead(500);
-			return response.end('Error loading index.html!');
+			return response.end('Error loading other file!');
 		}
-		// If no error happened, return the content of 'index.html'
-		response.writeHead(200, {
-			'Content-Type' : 'text/html'
-		});
+		// If no error happened, return the content of whatever's being asked for
+		var type = action.substr(-3);
+		if(type == 'png'){
+			response.writeHead(200, {
+				'Content-Type' : 'image/png'
+			});
+		} else if(type == 'jpg'){
+			response.writeHead(200, {
+				'Content-Type' : 'image/jpg'
+			});
+		}
 		response.end(content);
 	});
+	}
 }
 
 // Tells socket.io to listen to an event called 'connection'.
