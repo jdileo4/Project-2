@@ -75,7 +75,7 @@ io.sockets.on('connection', function(client) {
 	// Listen to an event called 'login'. The client should emit this event when
 	// it wants to log in to the chat room.
 	client.on('login', function(message) {
-	
+		
 		//debug
 		//console.log("login sent from html and picked up by listener in server");
 		// This function extracts the user name from the login message, stores
@@ -90,7 +90,8 @@ io.sockets.on('connection', function(client) {
 
 			//added------------------------------
 			client.set('piece', new Piece());
-
+			
+			
 			return;
 		}
 		// When something is wrong, send a login_failed message to the client.
@@ -158,7 +159,9 @@ for (var i = 0; i < 17; i++) {
 
 //make sure globalGrid is up to date
 function updateGlobalGrid() {
-
+	
+	//
+	
 	for (var i = 0; i < allsockets.length; ++i)
 	{
 	    client = allsockets[i];
@@ -173,6 +176,7 @@ function updateGlobalGrid() {
 					if (result.locations[0].x == x && result.locations[0].y == y) 
 					{
 						globalGrid[x][y] = result.color;
+						console.log('Last: ' + result.lastLocations[0].x + ',' + result.lastLocations[0].y);
 					};
 				};
 			};
@@ -196,7 +200,7 @@ function Piece() {
 	};
 	
 	this.lastLocations = this.locations;
-
+		
 	//update globalGrid
 	for (var x = 0; x < 17; x++) {
 		for (var y = 0; y < 17; y++) {
@@ -204,7 +208,7 @@ function Piece() {
 				globalGrid[x][y] = 0;
 			}
 			if (this.locations[0].x == x && this.locations[0].y == y) {
-				globalGrid[x][y] = this.color;
+				globalGrid[x][y] = this.color;			
 			}
 		}
 	}
@@ -215,6 +219,7 @@ function Piece() {
 Piece.prototype.moveLeft = function() {
 	this.lastLocations[0] = this.locations[0];
 	this.locations[0].x--;
+	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	updateGlobalGrid();
 };
 
