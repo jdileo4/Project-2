@@ -71,6 +71,8 @@ io.sockets.on('connection', function(client) {
 	allsockets.push(client);
 	// Send a welcome message first.
 	client.emit('welcome', 'Welcome to Bitris!');
+	
+	client.set('loggedIn', 'false');
 
 	// Listen to an event called 'login'. The client should emit this event when
 	// it wants to log in to the chat room.
@@ -90,6 +92,7 @@ io.sockets.on('connection', function(client) {
 
 			//added------------------------------
 			client.set('piece', new Piece());
+			client.set('loggedIn', true);
 			
 			
 			return;
@@ -106,41 +109,56 @@ io.sockets.on('connection', function(client) {
 		//debug
 		console.log("moveLeft sent from html and picked up by listener in server");
 		
-		//TODO  is this right?  does this detect 'moveLeft' from
-		//either client then access the piece from only that client
-		//that sent the message 'moveLeft'?
-		client.get('piece',
-				function(err, result)
+		
+		
+		if(client.get('loggedIn', function(err, test)
+			{	
+				console.log("logged in = " + test);
+				if (test == true)
 				{
-					result.moveLeft();
+					client.get('piece',
+							function(err, result)
+							{
+								result.moveLeft();
+							}
+						);
 				}
-			);
+			}));
+		
 		io.sockets.emit('syncUpdate', globalGrid);
 	});
 
-	client.on('moveRight', function() {
-		//TODO  is this right?  does this detect 'moveRight' from
-		//either client then access the piece from only that client
-		//that sent the message 'moveRight'?
-		client.get('piece', 
-			function(err, result)
-			{
-				result.moveRight();
-			}
-		);
+	client.on('moveRight', function() {		
+		if(client.get('loggedIn', function(err, test)
+			{	
+				console.log("logged in = " + test);
+				if (test == true)
+				{
+					client.get('piece', 
+						function(err, result)
+						{
+							result.moveRight();
+						}
+					);
+				}
+			}));
 		io.sockets.emit('syncUpdate', globalGrid);
 	});
 
 	client.on('moveDown', function() {
-		//TODO  is this right?  does this detect 'moveDown' from
-		//either client then access the piece from only that client
-		//that sent the message 'moveDown'?
-		client.get('piece', 
-			function(err, result)
-			{
-				result.moveDown();
-			}
-		);
+		if(client.get('loggedIn', function(err, test)
+				{	
+					console.log("logged in = " + test);
+					if (test == true)
+					{
+						client.get('piece', 
+							function(err, result)
+							{
+								result.moveDown();
+							}
+						);
+					}
+			}));
 		io.sockets.emit('syncUpdate', globalGrid);
 	});
 
@@ -199,7 +217,7 @@ function Piece() {
 		y : 0
 	};
 	
-	this.lastLocations = this.locations;
+	this.lastLocations = new Array(this.locations);
 		
 	//update globalGrid
 	for (var x = 0; x < 17; x++) {
@@ -218,6 +236,7 @@ function Piece() {
 
 Piece.prototype.moveLeft = function() {
 	this.lastLocations[0] = this.locations[0];
+	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	this.locations[0].x--;
 	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	updateGlobalGrid();
@@ -226,6 +245,7 @@ Piece.prototype.moveLeft = function() {
 Piece.prototype.moveRight = function() {
 	this.lastLocations[0] = this.locations[0];
 	this.locations[0].x++;
+	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	updateGlobalGrid();
 };
 
@@ -233,6 +253,11 @@ Piece.prototype.moveDown = function() {
 	this.lastLocations[0] = this.locations[0];
 	this.locations[0].y++;
 	//future... reset clock
+	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	updateGlobalGrid();
 };
 
+
+function hack(){
+	this.loggedIn = false;
+}
