@@ -187,14 +187,14 @@ function updateGlobalGrid() {
 		{
 			for (var x = 0; x < 17; x++) {
 				for (var y = 0; y < 17; y++) {
-					if (result.lastLocations[0].x == x && result.lastLocations[0].y == y) 
+					if (result.lastLocations.x == x && result.lastLocations.y == y) 
 					{
 						globalGrid[x][y] = 0;
 					};
-					if (result.locations[0].x == x && result.locations[0].y == y) 
+					if (result.locations.x == x && result.locations.y == y) 
 					{
 						globalGrid[x][y] = result.color;
-						console.log('Last: ' + result.lastLocations[0].x + ',' + result.lastLocations[0].y);
+						console.log('Last: ' + result.lastLocations.x + ',' + result.lastLocations.y);
 					};
 				};
 			};
@@ -209,23 +209,28 @@ function updateGlobalGrid() {
 
 function Piece() {
 	this.color = 1;
-	this.locations = [];
-	this.locations[0] = {
+	//this.locations = [];
+	this.locations = {
 		//just over top right of play area
 		x : 13,
 		//y increases downward
 		y : 0
 	};
 	
-	this.lastLocations = new Array(this.locations);
+	this.lastLocations = {
+		//just over top right of play area
+		x : 13,
+		//y increases downward
+		y : 0
+	};
 		
 	//update globalGrid
 	for (var x = 0; x < 17; x++) {
 		for (var y = 0; y < 17; y++) {
-			if (this.lastLocations[0].x == x && this.lastLocations[0].y == y) {
+			if (this.lastLocations.x == x && this.lastLocations.y == y) {
 				globalGrid[x][y] = 0;
 			}
-			if (this.locations[0].x == x && this.locations[0].y == y) {
+			if (this.locations.x == x && this.locations.y == y) {
 				globalGrid[x][y] = this.color;			
 			}
 		}
@@ -235,25 +240,35 @@ function Piece() {
 //move functions
 
 Piece.prototype.moveLeft = function() {
-	this.lastLocations[0] = this.locations[0];
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
-	this.locations[0].x--;
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	if((typeof lastLocations !== 'undefined' && typeof lastLocations.x !== 'undefined') && lastLocations.x > 0){
+		this.lastLocations.x = this.locations.x;
+		this.lastLocations.y = this.locations.y;
+		this.locations.x--;
+	}
+	console.log("Last location: (" + this.lastLocations.x + "," + this.lastLocations.y + "); This location: (" + this.locations.x + "," + this.locations.y + ")."); 
 	updateGlobalGrid();
 };
 
 Piece.prototype.moveRight = function() {
-	this.lastLocations[0] = this.locations[0];
-	this.locations[0].x++;
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	if((typeof lastLocations !== 'undefined' && typeof lastLocations.x !== 'undefined') && lastLocations.x < 17){
+		this.lastLocations.x = this.locations.x;
+		this.lastLocations.y = this.locations.y;
+		this.locations.x++;
+	}
+	console.log("Last location: (" + this.lastLocations.x + "," + this.lastLocations.y + "); This location: (" + this.locations.x + "," + this.locations.y + ")."); 
 	updateGlobalGrid();
 };
 
 Piece.prototype.moveDown = function() {
-	this.lastLocations[0] = this.locations[0];
-	this.locations[0].y++;
-	//future... reset clock
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	console.log(this.locations);
+	if((typeof lastLocations !== 'undefined' && typeof lastLocations.x !== 'undefined') && lastLocations.y < 17){
+		this.lastLocations.x = this.locations.x;
+		this.lastLocations.y = this.locations.y;
+		this.locations.y++;
+		//future... reset clock
+	}
+	console.log("Last location: (" + this.lastLocations.x + "," + this.lastLocations.y + "); This location: (" + this.locations.x + "," + this.locations.y + ").");
+	console.log(this.lastLocations);
 	updateGlobalGrid();
 };
 
