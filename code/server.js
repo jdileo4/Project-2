@@ -2,6 +2,8 @@
 //setup..
 //-----------------------------------------
 
+var src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js";
+
 // The node.js HTTP server.
 var app = require('http').createServer(handler);
 
@@ -107,13 +109,14 @@ io.sockets.on('connection', function(client) {
 	//TODO is it socket.on or something else?  or this?
 	client.on('moveLeft', function() {
 		//debug
-		console.log("moveLeft sent from html and picked up by listener in server");
+		//console.log("moveLeft sent from html and picked up by listener in server");
 		
 		
 		
 		if(client.get('loggedIn', function(err, test)
 			{	
-				console.log("logged in = " + test);
+				//debug
+				//console.log("logged in = " + test);
 				if (test == true)
 				{
 					client.get('piece',
@@ -131,7 +134,8 @@ io.sockets.on('connection', function(client) {
 	client.on('moveRight', function() {		
 		if(client.get('loggedIn', function(err, test)
 			{	
-				console.log("logged in = " + test);
+				//debug
+				//console.log("logged in = " + test);
 				if (test == true)
 				{
 					client.get('piece', 
@@ -148,7 +152,8 @@ io.sockets.on('connection', function(client) {
 	client.on('moveDown', function() {
 		if(client.get('loggedIn', function(err, test)
 				{	
-					console.log("logged in = " + test);
+					//debug
+					//console.log("logged in = " + test);
 					if (test == true)
 					{
 						client.get('piece', 
@@ -194,7 +199,8 @@ function updateGlobalGrid() {
 					if (result.locations[0].x == x && result.locations[0].y == y) 
 					{
 						globalGrid[x][y] = result.color;
-						console.log('Last: ' + result.lastLocations[0].x + ',' + result.lastLocations[0].y);
+						//debug
+						//console.log('Last: ' + result.lastLocations[0].x + ',' + result.lastLocations[0].y);
 					};
 				};
 			};
@@ -210,6 +216,7 @@ function updateGlobalGrid() {
 function Piece() {
 	this.color = 1;
 	this.locations = [];
+	this.lastLocations = [];
 	this.locations[0] = {
 		//just over top right of play area
 		x : 13,
@@ -217,7 +224,11 @@ function Piece() {
 		y : 0
 	};
 	
-	this.lastLocations = new Array(this.locations);
+	this.lastLocations[0] = {
+		x : 13,
+		y : 0
+	};
+	
 		
 	//update globalGrid
 	for (var x = 0; x < 17; x++) {
@@ -235,24 +246,39 @@ function Piece() {
 //move functions
 
 Piece.prototype.moveLeft = function() {
-	this.lastLocations[0] = this.locations[0];
+	var temp = jQuery.extend(true, {}, locations[0]);
+	lastLocations[0] = temp;
+	//debug
+	console.log("moveLeft");
 	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	this.locations[0].x--;
+	//debug
+	console.log("after this.locations[0].x--");
 	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	updateGlobalGrid();
 };
 
 Piece.prototype.moveRight = function() {
 	this.lastLocations[0] = this.locations[0];
+	//debug
+	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	this.locations[0].x++;
+	//debug
+	console.log("after this.locations[0].x--");
 	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	updateGlobalGrid();
 };
 
 Piece.prototype.moveDown = function() {
-	this.lastLocations[0] = this.locations[0];
+	var temp = this.locations[0];
+	//set x and y individually
+	this.lastLocations[0] = temp;
+	//debug
+	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	this.locations[0].y++;
 	//future... reset clock
+	//debug
+	console.log("after this.locations[0].x--");
 	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	updateGlobalGrid();
 };
