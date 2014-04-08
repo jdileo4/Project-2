@@ -82,7 +82,6 @@ io.sockets.on('connection', function(client) {
 	// Send a welcome message first.
 	client.emit('welcome', 'Welcome to Bitris!');
 	
-	
 	client.set('loggedIn', false);
 
 	// Listen to an event called 'login'. The client should emit this event when
@@ -106,7 +105,7 @@ io.sockets.on('connection', function(client) {
 			clientArray.push(client);
 
 			//adding attributes------------------------------
-			client.set('piece', new Piece());
+			client.set('piece', new Piece(1));
 			client.set('loggedIn', true);
 			client.set('interval', {interval : 0, client : client});
 			if (clientArray.length > 1)
@@ -265,15 +264,17 @@ function updateGlobalGrid() {
 			if (result){
 				for (var x = 0; x < 17; x++) {
 					for (var y = 0; y < 17; y++) {
-						if (result.lastLocations[0].x == x && result.lastLocations[0].y == y) 
-						{
-							globalGrid[x][y] = 0;
-						};
-						if (result.locations[0].x == x && result.locations[0].y == y) 
-						{
-							globalGrid[x][y] = result.color;
-							//debug
-							//console.log('Last: ' + result.lastLocations[0].x + ',' + result.lastLocations[0].y);
+						for (var i = 0; i < result.locations.length; i++){
+							if (result.lastLocations[i].x == x && result.lastLocations[i].y == y) 
+							{
+								globalGrid[x][y] = 0;
+							};
+							if (result.locations[i].x == x && result.locations[i].y == y) 
+							{
+								globalGrid[x][y] = result.color;
+								//debug
+								//console.log('Last: ' + result.lastLocations[0].x + ',' + result.lastLocations[0].y);
+							};
 						};
 					};
 				};
@@ -293,31 +294,52 @@ function updateGlobalGrid() {
 //Piece class
 //-------------------------------------------
 
-function Piece() {
-	this.color = 1;
-	this.locations = [];
-	this.lastLocations = [];
-	this.locations[0] = {
-		//just over top right of play area
-		x : 13,
-		//y increases downward
-		y : 0
-	};
+function Piece(type) {
+	//type = 1, square
+	//type = 2, L shape
+	//type = 3, J shape
+	//type = 4, line
+	//type = 5, T shape
+	//type = 6, Z shape
+	//type = 7, S shape
 	
-	this.lastLocations[0] = {
-		x : 13,
-		y : 0
-	};
+	if (type == 1){
+		this.color = type;
+		this.locations = [];
+		this.lastLocations = [];
+		this.locations[0] = {
+			//just over top right of play area
+			x : 13,
+			//y increases downward
+			y : 0
+		};
+		this.locations[1] = {
+			x : 12,
+			y : 0
+		}
+		this.locations[2] = {
+			x : 13,
+			y : 1
+		}
+		this.locations[3] = {
+			x : 12,
+			y : 1
+		}
+	}
+	
+	this.lastLocations = JSON.parse(JSON.stringify(this.locations));
 	
 		
 	//update globalGrid
 	for (var x = 0; x < 17; x++) {
 		for (var y = 0; y < 17; y++) {
-			if (this.lastLocations[0].x == x && this.lastLocations[0].y == y) {
-				globalGrid[x][y] = 0;
-			}
-			if (this.locations[0].x == x && this.locations[0].y == y) {
-				globalGrid[x][y] = this.color;			
+			for (var i = 0; i < this.locations.length; i++){
+				if (this.lastLocations[i].x == x && this.lastLocations[i].y == y) {
+					globalGrid[x][y] = 0;
+				}
+				if (this.locations[i].x == x && this.locations[i].y == y) {
+					globalGrid[x][y] = this.color;			
+				}
 			}
 		}
 	}
@@ -329,13 +351,15 @@ function Piece() {
 //move functions
 
 Piece.prototype.moveLeft = function() {
-	var temp = JSON.parse(JSON.stringify(this.locations[0]));
-	this.lastLocations[0] = temp;
+	var temp = JSON.parse(JSON.stringify(this.locations));
+	this.lastLocations = temp;
 	
 	//debug
 	console.log("moveLeft");
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
-	this.locations[0].x--;
+	for (var i = 0; i < this.locations.length; i++){
+		this.locations[i].x--;
+	}
 	//debug
 	//console.log("after this.locations[0].x--");
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
@@ -343,13 +367,15 @@ Piece.prototype.moveLeft = function() {
 };
 
 Piece.prototype.moveRight = function() {
-	var temp = JSON.parse(JSON.stringify(this.locations[0]));
-	this.lastLocations[0] = temp;
+	var temp = JSON.parse(JSON.stringify(this.locations));
+	this.lastLocations = temp;
 	//debug
 	console.log("moveRight");
 	//debug
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
-	this.locations[0].x++;
+	for (var i = 0; i < this.locations.length; i++){
+		this.locations[i].x++;
+	}
 	//debug
 	//console.log("after this.locations[0].x--");
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
@@ -357,16 +383,16 @@ Piece.prototype.moveRight = function() {
 };
 
 Piece.prototype.moveDown = function() {
-	var temp = JSON.parse(JSON.stringify(this.locations[0]));
-	this.lastLocations[0] = temp;
+	var temp = JSON.parse(JSON.stringify(this.locations));
+	this.lastLocations = temp;
 	//debug
 	console.log("moveDown");
 	
 	//debug
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
-	
-	this.locations[0].y++;
-	
+	for (var i = 0; i < this.locations.length; i++){
+		this.locations[i].y++;
+	}
 	//debug
 	//console.log("after this.locations[0].x--");
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
