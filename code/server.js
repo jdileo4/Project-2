@@ -14,6 +14,8 @@ var app = require('http').createServer(handler);
 
 // The socket.io WebSocket server, running with the node.js server.
 var io = require('socket.io').listen(app);
+//lower level of debug log messages
+io.set('log level', 1);
 
 // Allows access to local file system.
 var fs = require('fs');
@@ -79,21 +81,7 @@ var clientArray = [];
 io.sockets.on('connection', function(client) {
 	// Send a welcome message first.
 	client.emit('welcome', 'Welcome to Bitris!');
-	//add client to list of sockets
-	clientArray.push(client);
 	
-	if (clientArray.length > 1)
-	{
-		client.set('rotated', true);
-		//debug
-		console.log("client is rotated");
-	}
-	else
-	{
-		client.set ('rotated', false);
-		//debug
-		console.log("client is NOT rotated");
-	}
 	
 	client.set('loggedIn', false);
 
@@ -113,26 +101,58 @@ io.sockets.on('connection', function(client) {
 			//// client.broadcast.emits() will send to all clients except the
 			//// current client. See socket.io FAQ for more examples.
 			//client.broadcast.emit('notification', message.user_name + ' entered the room.');
+			
+			//add client to list of sockets
+			clientArray.push(client);
 
-			//added------------------------------
+			//adding attributes------------------------------
 			client.set('piece', new Piece());
 			client.set('loggedIn', true);
+			client.set('interval', {interval : 0, client : client});
+			if (clientArray.length > 1)
+			{
+				client.set('rotated', true);
+				//debug
+				console.log("client is rotated");
+			}
+			else
+			{
+				client.set ('rotated', false);
+				//debug
+				console.log("client is NOT rotated");
+			}
 			
 			//debug
 			console.log("Login successful: " + message.user_name);
 		
-			//upon login, begin timer.
+			//upon login of both clients, begin timer.
 			//TODO: have this instead under client.on('ready')
-			interval = 
-			setInterval(function(){
-				client.get('piece', function(err, result){
-						//debug
-						console.log("interval count: login");
+			if (clientArray.length == 2){
+				for (var i = 0; i < clientArray.length; ++i){
+					clientArray[i].get('interval', function(err, result){
+						if (result)
+						{
+							
+							result.interval = 
+								setInterval(function(){
+									result.client.get('piece', function(err, result1){
+											//debug
+											result.client.get('user_name', function(err, userName){
+													console.log("interval count (" + userName +
+														"): login");
+											});
+											result1.moveDown();
+									});
+								}, 1000);
+						}
+						else
+						{
+							console.log(err);
+						}
 						
-						result.moveDown();
-				});
-			}, 1000);
-			
+					});
+				}
+			}
 			return;
 		}
 		// When something is wrong, send a login_failed message to the client.
@@ -198,15 +218,17 @@ io.sockets.on('connection', function(client) {
 								result.moveDown();
 								
 								//clear current interval object and set new one
-								clearInterval(interval);
-								interval = 
-								setInterval(function(){
-									//debug
-									console.log("interval count: moveDown");
-									client.get('piece', function(err, result1){
-											result1.moveDown();
-									});
-								}, 1000);
+								client.get('interval', function(err, result){
+									clearInterval(result.interval);
+									result.interval = 
+										setInterval(function(){
+											//debug
+											console.log("interval count: moveDown");
+											client.get('piece', function(err, result1){
+												result1.moveDown();
+											});
+										}, 1000);
+								});
 							}
 						);
 					}
@@ -309,6 +331,7 @@ function Piece() {
 Piece.prototype.moveLeft = function() {
 	var temp = JSON.parse(JSON.stringify(this.locations[0]));
 	this.lastLocations[0] = temp;
+	
 	//debug
 	console.log("moveLeft");
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 

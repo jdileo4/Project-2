@@ -46,8 +46,8 @@
 		'welcome',
 		  function(message) {
 		  //debug
-			alert("'welcome' recieved from server");
-			alert(message);
+			//alert("'welcome' recieved from server");
+			//alert(message);
 		  });
 			
 		//temporary local global vars to facilitate movement of 1x1
@@ -104,7 +104,7 @@
 			lastX = x; lastY = y;
 		}
 		function processConnect(){
-			alert(document.getElementById("loginName").value);
+			//alert(document.getElementById("loginName").value);
 			var message = {};
 			message.user_name = document.getElementById("loginName").value;
 			socket.emit('login', message);
@@ -125,7 +125,7 @@
 				//SCOTT  commenting out updateDEBUG because lastXCoordinates undefined error
 				//updateDEBUG();
 				//emit event left
-				alert("socket.emit('moveLeft') called");
+				//alert("socket.emit('moveLeft') called");
 				socket.emit('moveLeft');
 			}
 			if(event.keyCode == 38){
