@@ -1,8 +1,13 @@
+//general todos
+//TODO:  may want to more specifically tie in one timer per client...
+	//presently the single timer seems to be working the way
+	//we want but hard to tell at this point
+
 //-----------------------------------------
 //setup..
 //-----------------------------------------
-
-var src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js";
+//var jQuery = document.createElement('script');
+//jQuery.src = "//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js";
 
 // The node.js HTTP server.
 var app = require('http').createServer(handler);
@@ -67,14 +72,30 @@ function handler(request, response) {
 // server. At that time, the function (the 2nd argument) will be called with an
 // object representing the client.
 
+//timer object
+var interval;
 //(when someone connects, add these event handlers to that client)
-var allsockets = [];
+var clientArray = [];
 io.sockets.on('connection', function(client) {
-	allsockets.push(client);
 	// Send a welcome message first.
 	client.emit('welcome', 'Welcome to Bitris!');
+	//add client to list of sockets
+	clientArray.push(client);
 	
-	client.set('loggedIn', 'false');
+	if (clientArray.length > 1)
+	{
+		client.set('rotated', true);
+		//debug
+		console.log("client is rotated");
+	}
+	else
+	{
+		client.set ('rotated', false);
+		//debug
+		console.log("client is NOT rotated");
+	}
+	
+	client.set('loggedIn', false);
 
 	// Listen to an event called 'login'. The client should emit this event when
 	// it wants to log in to the chat room.
@@ -82,25 +103,42 @@ io.sockets.on('connection', function(client) {
 		
 		//debug
 		//console.log("login sent from html and picked up by listener in server");
+		
 		// This function extracts the user name from the login message, stores
 		// it to the client object, sends a login_ok message to the client, and
 		// sends notifications to other clients.
 		if (message && message.user_name) {
 			client.set('user_name', message.user_name);
 			client.emit('login_ok');
-			// client.broadcast.emits() will send to all clients except the
-			// current client. See socket.io FAQ for more examples.
-			client.broadcast.emit('notification', message.user_name + ' entered the room.');
+			//// client.broadcast.emits() will send to all clients except the
+			//// current client. See socket.io FAQ for more examples.
+			//client.broadcast.emit('notification', message.user_name + ' entered the room.');
 
 			//added------------------------------
 			client.set('piece', new Piece());
 			client.set('loggedIn', true);
 			
+			//debug
+			console.log("Login successful: " + message.user_name);
+		
+			//upon login, begin timer.
+			//TODO: have this instead under client.on('ready')
+			interval = 
+			setInterval(function(){
+				client.get('piece', function(err, result){
+						//debug
+						console.log("interval count: login");
+						
+						result.moveDown();
+				});
+			}, 1000);
 			
 			return;
 		}
 		// When something is wrong, send a login_failed message to the client.
 		client.emit('login_failed');
+		//debug
+		console.log("login failed");
 	});
 	
 	
@@ -111,13 +149,11 @@ io.sockets.on('connection', function(client) {
 		//debug
 		//console.log("moveLeft sent from html and picked up by listener in server");
 		
-		
-		
-		if(client.get('loggedIn', function(err, test)
+		if(client.get('loggedIn', function(err, loggedIn)
 			{	
 				//debug
-				//console.log("logged in = " + test);
-				if (test == true)
+				//console.log("logged in = " + loggedIn);
+				if (loggedIn == true)
 				{
 					client.get('piece',
 							function(err, result)
@@ -132,11 +168,11 @@ io.sockets.on('connection', function(client) {
 	});
 
 	client.on('moveRight', function() {		
-		if(client.get('loggedIn', function(err, test)
+		if(client.get('loggedIn', function(err, loggedIn)
 			{	
 				//debug
-				//console.log("logged in = " + test);
-				if (test == true)
+				//console.log("logged in = " + loggedIn);
+				if (loggedIn == true)
 				{
 					client.get('piece', 
 						function(err, result)
@@ -150,16 +186,27 @@ io.sockets.on('connection', function(client) {
 	});
 
 	client.on('moveDown', function() {
-		if(client.get('loggedIn', function(err, test)
+		if(client.get('loggedIn', function(err, loggedIn)
 				{	
 					//debug
-					//console.log("logged in = " + test);
-					if (test == true)
+					//console.log("logged in = " + loggedIn);
+					if (loggedIn == true)
 					{
 						client.get('piece', 
 							function(err, result)
 							{
 								result.moveDown();
+								
+								//clear current interval object and set new one
+								clearInterval(interval);
+								interval = 
+								setInterval(function(){
+									//debug
+									console.log("interval count: moveDown");
+									client.get('piece', function(err, result1){
+											result1.moveDown();
+									});
+								}, 1000);
 							}
 						);
 					}
@@ -185,27 +232,38 @@ function updateGlobalGrid() {
 	
 	//
 	
-	for (var i = 0; i < allsockets.length; ++i)
+	for (var i = 0; i < clientArray.length; ++i)
 	{
-	    client = allsockets[i];
+	    client = clientArray[i];
+		//debug
+		//console.log("updateGlobalGrid: clientArray[" + i +
+		//			"] == " + client);
 		client.get('piece', function(err, result) 
 		{
-			for (var x = 0; x < 17; x++) {
-				for (var y = 0; y < 17; y++) {
-					if (result.lastLocations[0].x == x && result.lastLocations[0].y == y) 
-					{
-						globalGrid[x][y] = 0;
-					};
-					if (result.locations[0].x == x && result.locations[0].y == y) 
-					{
-						globalGrid[x][y] = result.color;
-						//debug
-						//console.log('Last: ' + result.lastLocations[0].x + ',' + result.lastLocations[0].y);
+			if (result){
+				for (var x = 0; x < 17; x++) {
+					for (var y = 0; y < 17; y++) {
+						if (result.lastLocations[0].x == x && result.lastLocations[0].y == y) 
+						{
+							globalGrid[x][y] = 0;
+						};
+						if (result.locations[0].x == x && result.locations[0].y == y) 
+						{
+							globalGrid[x][y] = result.color;
+							//debug
+							//console.log('Last: ' + result.lastLocations[0].x + ',' + result.lastLocations[0].y);
+						};
 					};
 				};
+			}
+			else
+			{
+				console.log(err);
 			};
 		});
 	};
+	
+	io.sockets.emit('syncUpdate', globalGrid);
 };
 
 
@@ -241,45 +299,55 @@ function Piece() {
 			}
 		}
 	}
+	
+	//debug
+	console.log("'piece' created");
 }
 
 //move functions
 
 Piece.prototype.moveLeft = function() {
-	var temp = jQuery.extend(true, {}, locations[0]);
-	lastLocations[0] = temp;
+	var temp = JSON.parse(JSON.stringify(this.locations[0]));
+	this.lastLocations[0] = temp;
 	//debug
 	console.log("moveLeft");
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	this.locations[0].x--;
 	//debug
-	console.log("after this.locations[0].x--");
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	//console.log("after this.locations[0].x--");
+	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	updateGlobalGrid();
 };
 
 Piece.prototype.moveRight = function() {
-	this.lastLocations[0] = this.locations[0];
+	var temp = JSON.parse(JSON.stringify(this.locations[0]));
+	this.lastLocations[0] = temp;
 	//debug
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	console.log("moveRight");
+	//debug
+	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	this.locations[0].x++;
 	//debug
-	console.log("after this.locations[0].x--");
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	//console.log("after this.locations[0].x--");
+	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	updateGlobalGrid();
 };
 
 Piece.prototype.moveDown = function() {
-	var temp = this.locations[0];
-	//set x and y individually
+	var temp = JSON.parse(JSON.stringify(this.locations[0]));
 	this.lastLocations[0] = temp;
 	//debug
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
-	this.locations[0].y++;
-	//future... reset clock
+	console.log("moveDown");
+	
 	//debug
-	console.log("after this.locations[0].x--");
-	console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	
+	this.locations[0].y++;
+	
+	//debug
+	//console.log("after this.locations[0].x--");
+	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	
 	updateGlobalGrid();
 };
 
