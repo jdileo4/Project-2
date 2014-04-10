@@ -443,20 +443,20 @@ function Piece(type, client) {
 		case SQUARE:						//square
 			this.locations[0] = {
 				//just over top right of play area
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				//y increases downward
 				y : 0
 			};
 			this.locations[1] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 0
 			}
 			this.locations[2] = {
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				y : 1
 			}
 			this.locations[3] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 1
 			}
 			break;
@@ -464,20 +464,20 @@ function Piece(type, client) {
 		case L_SHAPE:						//L-shape
 			this.locations[0] = {
 				//just over top right of play area
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				//y increases downward
 				y : 0
 			};
 			this.locations[1] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 0
 			}
 			this.locations[2] = {
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				y : 1
 			}
 			this.locations[3] = {
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				y : 2
 			}
 			break;
@@ -485,20 +485,20 @@ function Piece(type, client) {
 		case BACKWARDS_L_SHAPE:						//Backwards L shape
 			this.locations[0] = {
 				//just over top right of play area
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				//y increases downward
 				y : 0
 			};
 			this.locations[1] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 0
 			}
 			this.locations[2] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 1
 			}
 			this.locations[3] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 2
 			}
 			break;
@@ -506,20 +506,20 @@ function Piece(type, client) {
 		case LINE:						//line
 			this.locations[0] = {
 				//just over top right of play area
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				//y increases downward
 				y : 0
 			};
 			this.locations[1] = {
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				y : 1
 			}
 			this.locations[2] = {
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				y : 2
 			}
 			this.locations[3] = {
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				y : 3
 			}
 			break;
@@ -527,20 +527,20 @@ function Piece(type, client) {
 		case T_SHAPE:						//T-shape
 			this.locations[0] = {
 				//just over top right of play area
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				//y increases downward
 				y : 0
 			};
 			this.locations[1] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y :0
 			}
 			this.locations[2] = {
-				x : 11,
+				x : GLOBAL_GRID_SIZE - 3,
 				y : 0
 			}
 			this.locations[3] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 1
 			}
 			break;
@@ -548,20 +548,20 @@ function Piece(type, client) {
 		case Z_SHAPE:						//Z-shape
 			this.locations[0] = {
 				//just over top right of play area
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				//y increases downward
 				y : 0
 			};
 			this.locations[1] = {
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				y : 1
 			}
 			this.locations[2] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 1
 			}
 			this.locations[3] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 2
 			}
 			break;
@@ -569,20 +569,20 @@ function Piece(type, client) {
 		case BACKWARDS_Z_SHAPE:					//Backwards Z-shape
 			this.locations[0] = {
 				//just over top right of play area
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				//y increases downward
 				y : 0
 			};
 			this.locations[1] = {
-				x : GLOBAL_GRID_SIZE - 5,
+				x : GLOBAL_GRID_SIZE - 2,
 				y : 1
 			}
 			this.locations[2] = {
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				y : 1
 			}
 			this.locations[3] = {
-				x : GLOBAL_GRID_SIZE - 4,
+				x : GLOBAL_GRID_SIZE - 1,
 				y : 2
 			}
 			break;
@@ -776,6 +776,26 @@ Piece.prototype.moveUp = function() {
 	updateGlobalGrid();
 }
 
+// x for clockwise, z for counterclockwise
+Piece.prototype.rotateClockwise = function() {
+	var temp = JSON.parse(JSON.stringify(this.locations));
+	this.lastLocations = temp;
+	var temp1 = JSON.parse(JSON.stringify(this.locations));
+	this.possLocations = temp1;
+
+	var validMove = true;
+	//debug
+	console.log("rotateClockwise");
+	
+	//calculate where locations will be and see if there are already non-zero values there
+		//if there are, it's invalid
+		//if not, set locations equal to those values
+	
+	for (
+	
+	
+}
+	
 
 //HELPER FUNCTIONS--------------------------------------------------------------------------------------
 
@@ -837,9 +857,4 @@ var updateClients = function()
 			}
 		});
 	}
-}
-
-//TODO remove this
-function hack(){
-	this.loggedIn = false;
 }
