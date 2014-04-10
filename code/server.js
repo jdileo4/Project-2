@@ -153,13 +153,13 @@ io.sockets.on('connection', function(client) {
 			client.set('interval', {interval : 0, client : client});
 			if (clientArray.length > 1)
 			{
-				client.set('rotated', true);
+				client.set('rotated', {rotated : true, client : client});
 				//debug
 				console.log("client is rotated");
 			}
 			else
 			{
-				client.set ('rotated', false);
+				client.set ('rotated', {rotated : false, client : client});
 				//debug
 				console.log("client is NOT rotated");
 			}
@@ -167,25 +167,53 @@ io.sockets.on('connection', function(client) {
 			//debug
 			console.log("Login successful: " + message.user_name);
 		
-			//TIMER----------------------------------------------------------------------------
+			//TIMER INTERVAL----------------------------------------------------------------------------
 			//TODO: have this instead under client.on('ready')
 			if (clientArray.length == 2){
 				for (var i = 0; i < clientArray.length; ++i){
+					var rotated;
+					clientArray[i].get('rotated', function(err, result){
+						if (result)
+						{
+							rotated = result.rotated;
+							console.log("rotated set to: " + rotated);
+						}
+						else
+						{
+							console.log(err);
+						}
+					});
 					clientArray[i].get('interval', function(err, result){
 						if (result)
 						{
-							
-							result.interval = 
-								setInterval(function(){
-									result.client.get('piece', function(err, result1){
-											//debug
-											result.client.get('user_name', function(err, userName){
-													console.log("interval count (" + userName +
-														"): login");
-											});
-											result1.moveDown();
-									});
-								}, 1000);
+							if (rotated)
+							{
+								result.interval = 
+									setInterval(function(){
+										result.client.get('piece', function(err, result1){
+												//debug
+												//result.client.get('user_name', function(err, userName){
+												//		console.log("interval count (" + userName +
+												//			"): login");
+												//});
+												result1.moveLeft();
+										});
+									}, 1000);
+							}
+							else
+							{
+								result.interval = 
+									setInterval(function(){
+										result.client.get('piece', function(err, result1){
+												//debug
+												//result.client.get('user_name', function(err, userName){
+												//		console.log("interval count (" + userName +
+												//			"): login");
+												//});
+												result1.moveDown();
+										});
+									}, 1000);
+							}
 						}
 						else
 						{
@@ -205,12 +233,19 @@ io.sockets.on('connection', function(client) {
 	
 	
 	//LISTENERS------------------------------------------------------------------------
-
-	//TODO is it socket.on or something else?  or this?
+	
 	client.on('moveLeft', function() {
-		//debug
-		//console.log("moveLeft sent from html and picked up by listener in server");
-		
+		var rotated;
+			client.get('rotated', function(err, result){
+				if (result)
+				{
+					rotated = result.rotated;
+				}
+				else
+				{
+					console.log(err);
+				}
+			})
 		if(client.get('loggedIn', function(err, loggedIn)
 			{	
 				//debug
@@ -220,16 +255,32 @@ io.sockets.on('connection', function(client) {
 					client.get('piece',
 							function(err, result)
 							{
-								result.moveLeft();
+								if (rotated)
+								{
+									result.moveUp();
+								}
+								else
+								{
+									result.moveLeft();
+								}
 							}
 						);
 				}
 			}));
-		
-		//io.sockets.emit('syncUpdate', globalGrid);
 	});
 
 	client.on('moveRight', function() {		
+		var rotated;
+		client.get('rotated', function(err, result){
+			if (result)
+			{
+				rotated = result.rotated;
+			}
+			else
+			{
+				console.log(err);
+			}
+		})
 		if(client.get('loggedIn', function(err, loggedIn)
 			{	
 				//debug
@@ -239,16 +290,33 @@ io.sockets.on('connection', function(client) {
 					client.get('piece', 
 						function(err, result)
 						{
-							result.moveRight();
+							if (rotated)
+							{
+								result.moveDown();
+							}
+							else
+							{
+								result.moveRight();
+							}
 						}
 					);
 				}
 			}));
-		//io.sockets.emit('syncUpdate', globalGrid);
 	});
 
 	client.on('moveDown', function() {
-		if(client.get('loggedIn', function(err, loggedIn)
+		var rotated;
+		client.get('rotated', function(err, result){
+			if (result)
+			{
+				rotated = result.rotated;
+			}
+			else
+			{
+				console.log(err);
+			}
+		})
+		client.get('loggedIn', function(err, loggedIn)
 				{	
 					//debug
 					//console.log("logged in = " + loggedIn);
@@ -257,25 +325,44 @@ io.sockets.on('connection', function(client) {
 						client.get('piece', 
 							function(err, result)
 							{
-								result.moveDown();
-								
-								//clear current interval object and set new one
-								client.get('interval', function(err, result){
-									clearInterval(result.interval);
-									result.interval = 
-										setInterval(function(){
-											//debug
-											console.log("interval count: moveDown");
-											client.get('piece', function(err, piece){
-												piece.moveDown();
-											});
-										}, 1000);
-								});
+								if (rotated)
+								{
+									result.moveLeft();
+									
+									//clear current interval object and set new one
+									client.get('interval', function(err, result){
+										clearInterval(result.interval);
+										result.interval = 
+											setInterval(function(){
+												//debug
+												console.log("interval count: moveLeft");
+												client.get('piece', function(err, piece){
+													piece.moveLeft();
+												});
+											}, 1000);
+									});
+								}
+								else
+								{
+									result.moveDown();
+									
+									//clear current interval object and set new one
+									client.get('interval', function(err, result){
+										clearInterval(result.interval);
+										result.interval = 
+											setInterval(function(){
+												//debug
+												console.log("interval count: moveDown");
+												client.get('piece', function(err, piece){
+													piece.moveDown();
+												});
+											}, 1000);
+									});
+								}
 							}
 						);
 					}
-			}));
-		//io.sockets.emit('syncUpdate', globalGrid);
+		});
 	});
 
 });
@@ -336,7 +423,7 @@ function updateGlobalGrid() {
 		});
 	};
 	
-	io.sockets.emit('syncUpdate', globalGrid);
+	updateClients();
 };
 
 
@@ -541,18 +628,36 @@ Piece.prototype.moveLeft = function() {
 	
 	//check if move is valid
 	for (var i = 0; i < this.locations.length; i++){
-		if ( (this.locations[i].x <= 1) ||
+		if ( (this.locations[i].x <= 0) ||
 				(backgroundGrid[this.locations[i].x - 1][this.locations[i].y] != 0) )
 		{
 			validMove = false;
 		}
 	}
 	//if it is, move the piece
-	if (validMove){
+	if (validMove)
+	{
 		for (var i = 0; i < this.locations.length; i++){
 			this.locations[i].x--;
 		}
 	}
+	else		//invalid move
+	{
+		var thisPiece = this; // need reference to piece for the following scope
+		this.client.get('rotated', function(err, result){
+			if(result)
+			{
+				if(result.rotated)
+				{
+					thisPiece.setPiece();
+				};
+			}
+			else
+			{
+				console.log(err);
+			};
+		});
+	};
 	//debug
 	//console.log("after this.locations[0].x--");
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
@@ -592,6 +697,8 @@ Piece.prototype.moveRight = function() {
 Piece.prototype.moveDown = function() {
 	var temp = JSON.parse(JSON.stringify(this.locations));
 	this.lastLocations = temp;
+	
+	var validMove = true;
 	//debug
 	console.log("moveDown");
 	
@@ -603,14 +710,33 @@ Piece.prototype.moveDown = function() {
 		if( (this.locations[i].y >= GLOBAL_GRID_SIZE - 1) ||
 			(backgroundGrid[this.locations[i].x][this.locations[i].y + 1] != 0))
 		{
-			this.setPiece();
-			updateGlobalGrid();
-			return;
+			validMove = false;
 		};
 	};
+	
 	//else... valid move, move the piece
-	for (var i = 0; i < this.locations.length; i++){
-		this.locations[i].y++;
+	if (validMove)
+	{
+		for (var i = 0; i < this.locations.length; i++){
+			this.locations[i].y++;
+		};
+	}
+	else		//invalid move
+	{
+		var thisPiece = this; // need reference to piece for the following scope
+		this.client.get('rotated', function(err, result){
+			if(result)
+			{
+				if(!result.rotated)
+				{
+					thisPiece.setPiece();
+				};
+			}
+			else
+			{
+				console.log(err);
+			};
+		});
 	};
 	//debug
 	//console.log("after this.locations[0].x--");
@@ -619,10 +745,41 @@ Piece.prototype.moveDown = function() {
 	updateGlobalGrid();
 };
 
+//moveUp is only used as a translation of moveLeft from the rotated client
+Piece.prototype.moveUp = function() {
+	var temp = JSON.parse(JSON.stringify(this.locations));
+	this.lastLocations = temp;
+
+	var validMove = true;
+	//debug
+	console.log("moveUp");
+	//debug
+	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	
+	//check if move is valid
+	for (var i = 0; i < this.locations.length; i++){
+		if ( (this.locations[i].y <= 0) ||
+				(backgroundGrid[this.locations[i].x][this.locations[i].y - 1] != 0) )
+		{
+			validMove = false;
+		}
+	}
+	//if it is, move the piece
+	if (validMove){
+		for (var i = 0; i < this.locations.length; i++){
+			this.locations[i].y--;
+		}
+	}
+	//debug
+	//console.log("after this.locations[0].x--");
+	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	updateGlobalGrid();
+}
+
 
 //HELPER FUNCTIONS--------------------------------------------------------------------------------------
 
-
+//adds piece permanently to background, turns it grey
 Piece.prototype.setPiece = function() {
 	//add piece to background grid
 	for (var i = 0; i < this.locations.length; i++)
@@ -634,6 +791,52 @@ Piece.prototype.setPiece = function() {
 	}
 	//create new client piece
 	this.client.set('piece', new Piece((Math.floor(Math.random() * 7) + 1), this.client));
+}
+
+//send either rotated or non-rotated globalGrid to clients via sockets
+//emits event 'syncUpdate'
+var updateClients = function()
+{
+//	var temp = JSON.parse(JSON.stringify(globalGrid));
+//	var rotatedGrid = temp;
+
+	var rotatedGrid = new Array(GLOBAL_GRID_SIZE);
+	for (var i = 0; i < GLOBAL_GRID_SIZE; i++) {
+		rotatedGrid[i] = new Array(GLOBAL_GRID_SIZE);
+	}
+	
+	//if rotated client, rotate globalGrid and send it to clients
+	for (var i = 0; i < clientArray.length; i++)
+	{
+		var client = clientArray[i];	//TODO try just doing clientArray[i].get()
+		client.get('rotated', function(err, result){
+			if (result)
+			{
+				if (result.rotated)		//client is rotated
+				{
+					//create rotated displayGrid
+					for (var x = 0; x < globalGrid.length; x++)
+					{
+						for (var y = 0; y < globalGrid.length; y++)
+						{
+							rotatedGrid[y][(16-x)] = globalGrid[x][y];
+						}
+					}
+					//send rotated grid to client
+					client.emit('syncUpdate', rotatedGrid);
+				}
+				else		//client is not rotated
+				{
+					//send regular globalGrid to client
+					client.emit('syncUpdate', globalGrid);
+				}
+			}
+			else
+			{
+				console.log(err);
+			}
+		});
+	}
 }
 
 //TODO remove this
