@@ -530,17 +530,28 @@ function Piece(type, client) {
 //move functions-----------------------------------
 
 Piece.prototype.moveLeft = function() {
-	//TODO  check if can move:
-		//can move if: x > 1 && for each locations[]: backgroundGrid [locations[i].x - 1] [locations[i].y] == 0
 	var temp = JSON.parse(JSON.stringify(this.locations));
 	this.lastLocations = temp;
+	
+	var validMove = true;
 	
 	//debug
 	console.log("moveLeft");
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	
+	//check if move is valid
 	for (var i = 0; i < this.locations.length; i++){
-		this.locations[i].x--;
-		//TODO possible debug here reporting locations
+		if ( (this.locations[i].x <= 1) ||
+				(backgroundGrid[this.locations[i].x - 1][this.locations[i].y] != 0) )
+		{
+			validMove = false;
+		}
+	}
+	//if it is, move the piece
+	if (validMove){
+		for (var i = 0; i < this.locations.length; i++){
+			this.locations[i].x--;
+		}
 	}
 	//debug
 	//console.log("after this.locations[0].x--");
@@ -549,16 +560,28 @@ Piece.prototype.moveLeft = function() {
 };
 
 Piece.prototype.moveRight = function() {
-	//TODO  check if can move:
-		//can move if: x < 16 && for each locations[]: backgroundGrid [locations[i].x + 1] [locations[i].y] == 0
 	var temp = JSON.parse(JSON.stringify(this.locations));
 	this.lastLocations = temp;
+
+	var validMove = true;
 	//debug
 	console.log("moveRight");
 	//debug
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	
+	//check if move is valid
 	for (var i = 0; i < this.locations.length; i++){
-		this.locations[i].x++;
+		if ( (this.locations[i].x >= GLOBAL_GRID_SIZE - 1) ||
+				(backgroundGrid[this.locations[i].x + 1][this.locations[i].y] != 0) )
+		{
+			validMove = false;
+		}
+	}
+	//if it is, move the piece
+	if (validMove){
+		for (var i = 0; i < this.locations.length; i++){
+			this.locations[i].x++;
+		}
 	}
 	//debug
 	//console.log("after this.locations[0].x--");
