@@ -791,7 +791,7 @@ Piece.prototype.rotateClockwise = function() {
 		//if there are, it's invalid
 		//if not, set locations equal to those values
 	
-	for (
+	//for (
 	
 	
 }
