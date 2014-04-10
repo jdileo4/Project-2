@@ -6,8 +6,26 @@
 //-----------------------------------------
 //setup..
 //-----------------------------------------
-//var jQuery = document.createElement('script');
-//jQuery.src = "//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js";
+
+//static variables
+var GLOBAL_GRID_SIZE = 17
+
+var RED = 1;
+var ORANGE = 2;
+var YELLOW = 3;
+var GREEN = 4;
+var CYAN = 5;
+var PURPLE = 6;
+var PINK = 7;
+var GREY = 8;
+
+var SQUARE = 1;
+var L_SHAPE = 2;
+var BACKWARDS_L_SHAPE = 3;
+var LINE = 4;
+var T_SHAPE = 5;
+var Z_SHAPE = 6;
+var BACKWARDS_Z_SHAPE = 7;
 
 // The node.js HTTP server.
 var app = require('http').createServer(handler);
@@ -69,15 +87,40 @@ function handler(request, response) {
 	}
 }
 
-// Tells socket.io to listen to an event called 'connection'.
-// This is a built-in event that is triggered when a client connects to the
-// server. At that time, the function (the 2nd argument) will be called with an
-// object representing the client.
 
+//--------------------------------------
+//Global variables
+//--------------------------------------
 //timer object
 var interval;
 //(when someone connects, add these event handlers to that client)
 var clientArray = [];
+
+//globalGrid keeps track of all pieces, moving and set
+//make 2 dimensional GLOBAL_GRID_SIZExGLOBAL_GRID_SIZE array
+var globalGrid = new Array(GLOBAL_GRID_SIZE);
+for (var i = 0; i < GLOBAL_GRID_SIZE; i++) {
+	globalGrid[i] = new Array(GLOBAL_GRID_SIZE);
+}
+
+//background keeps track of fallen/set pieces only
+var backgroundGrid = new Array(GLOBAL_GRID_SIZE);
+for (var i = 0; i < GLOBAL_GRID_SIZE; i++) {
+						//initialize all values to 0
+	backgroundGrid[i] = Array.apply(null, new Array(GLOBAL_GRID_SIZE)).
+										map(Number.prototype.valueOf,0);;
+}
+
+
+//--------------------------------------
+//Socket io  and event listeners
+//--------------------------------------
+
+
+// Tells socket.io to listen to an event called 'connection'.
+// This is a built-in event that is triggered when a client connects to the
+// server. At that time, the function (the 2nd argument) will be called with an
+// object representing the client.
 io.sockets.on('connection', function(client) {
 	// Send a welcome message first.
 	client.emit('welcome', 'Welcome to Bitris!');
@@ -104,8 +147,8 @@ io.sockets.on('connection', function(client) {
 			//add client to list of sockets
 			clientArray.push(client);
 
-			//adding attributes------------------------------
-			client.set('piece', new Piece(1));
+			//CLIENT ATTRIBUTES------------------------------------------------------------------
+			client.set('piece', new Piece((Math.floor(Math.random() * 7) + 1), client));
 			client.set('loggedIn', true);
 			client.set('interval', {interval : 0, client : client});
 			if (clientArray.length > 1)
@@ -124,7 +167,7 @@ io.sockets.on('connection', function(client) {
 			//debug
 			console.log("Login successful: " + message.user_name);
 		
-			//upon login of both clients, begin timer.
+			//TIMER----------------------------------------------------------------------------
 			//TODO: have this instead under client.on('ready')
 			if (clientArray.length == 2){
 				for (var i = 0; i < clientArray.length; ++i){
@@ -161,7 +204,7 @@ io.sockets.on('connection', function(client) {
 	});
 	
 	
-	//listeners.............
+	//LISTENERS------------------------------------------------------------------------
 
 	//TODO is it socket.on or something else?  or this?
 	client.on('moveLeft', function() {
@@ -183,7 +226,7 @@ io.sockets.on('connection', function(client) {
 				}
 			}));
 		
-		io.sockets.emit('syncUpdate', globalGrid);
+		//io.sockets.emit('syncUpdate', globalGrid);
 	});
 
 	client.on('moveRight', function() {		
@@ -201,7 +244,7 @@ io.sockets.on('connection', function(client) {
 					);
 				}
 			}));
-		io.sockets.emit('syncUpdate', globalGrid);
+		//io.sockets.emit('syncUpdate', globalGrid);
 	});
 
 	client.on('moveDown', function() {
@@ -223,8 +266,8 @@ io.sockets.on('connection', function(client) {
 										setInterval(function(){
 											//debug
 											console.log("interval count: moveDown");
-											client.get('piece', function(err, result1){
-												result1.moveDown();
+											client.get('piece', function(err, piece){
+												piece.moveDown();
 											});
 										}, 1000);
 								});
@@ -232,27 +275,18 @@ io.sockets.on('connection', function(client) {
 						);
 					}
 			}));
-		io.sockets.emit('syncUpdate', globalGrid);
+		//io.sockets.emit('syncUpdate', globalGrid);
 	});
 
 });
 
-//-----------------------------------------
-//main code
-//-----------------------------------------
 
-//make 2 dimensional 17x17 array
-var globalGrid = new Array(17);
-for (var i = 0; i < 17; i++) {
-	globalGrid[i] = new Array(17);
-}
-
+//-----------------------------------------
+//Main code
+//-----------------------------------------
 
 //make sure globalGrid is up to date
 function updateGlobalGrid() {
-	
-	//
-	
 	for (var i = 0; i < clientArray.length; ++i)
 	{
 	    client = clientArray[i];
@@ -262,14 +296,24 @@ function updateGlobalGrid() {
 		client.get('piece', function(err, result) 
 		{
 			if (result){
-				for (var x = 0; x < 17; x++) {
-					for (var y = 0; y < 17; y++) {
+				for (var x = 0; x < GLOBAL_GRID_SIZE; x++) {
+					for (var y = 0; y < GLOBAL_GRID_SIZE; y++) {
 						for (var i = 0; i < result.locations.length; i++){
 							if (result.lastLocations[i].x == x && result.lastLocations[i].y == y) 
 							{
 								globalGrid[x][y] = 0;
-							};
-							if (result.locations[i].x == x && result.locations[i].y == y) 
+							}
+							if (backgroundGrid[x][y] > 0)
+							{
+								globalGrid[x][y] = backgroundGrid[x][y];
+							}
+						};
+					};
+				};
+				for (var x = 0; x < GLOBAL_GRID_SIZE; x++) {
+					for (var y = 0; y < GLOBAL_GRID_SIZE; y++) {
+						for (var i = 0; i < result.locations.length; i++){
+							if (result.locations[i].x == x && result.locations[i].y == y)
 							{
 								globalGrid[x][y] = result.color;
 								//debug
@@ -283,6 +327,12 @@ function updateGlobalGrid() {
 			{
 				console.log(err);
 			};
+			//debug
+			console.log("locations at update: (" +
+						result.locations[0].x + "," + result.locations[0].y + ") , (" +
+						result.locations[1].x + "," + result.locations[1].y + ") , (" +
+						result.locations[2].x + "," + result.locations[2].y + ") , (" +
+						result.locations[3].x + "," + result.locations[3].y + ") , (");
 		});
 	};
 	
@@ -290,49 +340,178 @@ function updateGlobalGrid() {
 };
 
 
-//-------------------------------------------
-//Piece class
-//-------------------------------------------
+//---------------------------------------------------------------------------------------------
+//Piece
+//---------------------------------------------------------------------------------------------
 
-function Piece(type) {
-	//type = 1, square
-	//type = 2, L shape
-	//type = 3, J shape
-	//type = 4, line
-	//type = 5, T shape
-	//type = 6, Z shape
-	//type = 7, S shape
-	
-	if (type == 1){
-		this.color = type;
-		this.locations = [];
-		this.lastLocations = [];
-		this.locations[0] = {
-			//just over top right of play area
-			x : 13,
-			//y increases downward
-			y : 0
-		};
-		this.locations[1] = {
-			x : 12,
-			y : 0
-		}
-		this.locations[2] = {
-			x : 13,
-			y : 1
-		}
-		this.locations[3] = {
-			x : 12,
-			y : 1
-		}
+function Piece(type, client) {
+	//properties
+	this.client = client;
+	this.color = type;
+	this.locations = [];
+	this.lastLocations = [];
+	//piece shape
+	switch (type)
+	{
+		case SQUARE:						//square
+			this.locations[0] = {
+				//just over top right of play area
+				x : GLOBAL_GRID_SIZE - 4,
+				//y increases downward
+				y : 0
+			};
+			this.locations[1] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 0
+			}
+			this.locations[2] = {
+				x : GLOBAL_GRID_SIZE - 4,
+				y : 1
+			}
+			this.locations[3] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 1
+			}
+			break;
+		
+		case L_SHAPE:						//L-shape
+			this.locations[0] = {
+				//just over top right of play area
+				x : GLOBAL_GRID_SIZE - 4,
+				//y increases downward
+				y : 0
+			};
+			this.locations[1] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 0
+			}
+			this.locations[2] = {
+				x : GLOBAL_GRID_SIZE - 4,
+				y : 1
+			}
+			this.locations[3] = {
+				x : GLOBAL_GRID_SIZE - 4,
+				y : 2
+			}
+			break;
+		
+		case BACKWARDS_L_SHAPE:						//Backwards L shape
+			this.locations[0] = {
+				//just over top right of play area
+				x : GLOBAL_GRID_SIZE - 4,
+				//y increases downward
+				y : 0
+			};
+			this.locations[1] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 0
+			}
+			this.locations[2] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 1
+			}
+			this.locations[3] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 2
+			}
+			break;
+		
+		case LINE:						//line
+			this.locations[0] = {
+				//just over top right of play area
+				x : GLOBAL_GRID_SIZE - 4,
+				//y increases downward
+				y : 0
+			};
+			this.locations[1] = {
+				x : GLOBAL_GRID_SIZE - 4,
+				y : 1
+			}
+			this.locations[2] = {
+				x : GLOBAL_GRID_SIZE - 4,
+				y : 2
+			}
+			this.locations[3] = {
+				x : GLOBAL_GRID_SIZE - 4,
+				y : 3
+			}
+			break;
+		
+		case T_SHAPE:						//T-shape
+			this.locations[0] = {
+				//just over top right of play area
+				x : GLOBAL_GRID_SIZE - 4,
+				//y increases downward
+				y : 0
+			};
+			this.locations[1] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y :0
+			}
+			this.locations[2] = {
+				x : 11,
+				y : 0
+			}
+			this.locations[3] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 1
+			}
+			break;
+		
+		case Z_SHAPE:						//Z-shape
+			this.locations[0] = {
+				//just over top right of play area
+				x : GLOBAL_GRID_SIZE - 4,
+				//y increases downward
+				y : 0
+			};
+			this.locations[1] = {
+				x : GLOBAL_GRID_SIZE - 4,
+				y : 1
+			}
+			this.locations[2] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 1
+			}
+			this.locations[3] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 2
+			}
+			break;
+		
+		case BACKWARDS_Z_SHAPE:					//Backwards Z-shape
+			this.locations[0] = {
+				//just over top right of play area
+				x : GLOBAL_GRID_SIZE - 5,
+				//y increases downward
+				y : 0
+			};
+			this.locations[1] = {
+				x : GLOBAL_GRID_SIZE - 5,
+				y : 1
+			}
+			this.locations[2] = {
+				x : GLOBAL_GRID_SIZE - 4,
+				y : 1
+			}
+			this.locations[3] = {
+				x : GLOBAL_GRID_SIZE - 4,
+				y : 2
+			}
+			break;
+			
+		default:
+			console.log("Error, Piece created of type: " + type);
+			break;
 	}
+	
 	
 	this.lastLocations = JSON.parse(JSON.stringify(this.locations));
 	
 		
 	//update globalGrid
-	for (var x = 0; x < 17; x++) {
-		for (var y = 0; y < 17; y++) {
+	for (var x = 0; x < GLOBAL_GRID_SIZE; x++) {
+		for (var y = 0; y < GLOBAL_GRID_SIZE; y++) {
 			for (var i = 0; i < this.locations.length; i++){
 				if (this.lastLocations[i].x == x && this.lastLocations[i].y == y) {
 					globalGrid[x][y] = 0;
@@ -348,9 +527,11 @@ function Piece(type) {
 	console.log("'piece' created");
 }
 
-//move functions
+//move functions-----------------------------------
 
 Piece.prototype.moveLeft = function() {
+	//TODO  check if can move:
+		//can move if: x > 1 && for each locations[]: backgroundGrid [locations[i].x - 1] [locations[i].y] == 0
 	var temp = JSON.parse(JSON.stringify(this.locations));
 	this.lastLocations = temp;
 	
@@ -359,6 +540,7 @@ Piece.prototype.moveLeft = function() {
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
 	for (var i = 0; i < this.locations.length; i++){
 		this.locations[i].x--;
+		//TODO possible debug here reporting locations
 	}
 	//debug
 	//console.log("after this.locations[0].x--");
@@ -367,6 +549,8 @@ Piece.prototype.moveLeft = function() {
 };
 
 Piece.prototype.moveRight = function() {
+	//TODO  check if can move:
+		//can move if: x < 16 && for each locations[]: backgroundGrid [locations[i].x + 1] [locations[i].y] == 0
 	var temp = JSON.parse(JSON.stringify(this.locations));
 	this.lastLocations = temp;
 	//debug
@@ -390,9 +574,21 @@ Piece.prototype.moveDown = function() {
 	
 	//debug
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
+	
+	//if invalid move, set piece and exit function
+	for (var i = 0; i < this.locations.length; i++){
+		if( (this.locations[i].y >= GLOBAL_GRID_SIZE - 1) ||
+			(backgroundGrid[this.locations[i].x][this.locations[i].y + 1] != 0))
+		{
+			this.setPiece();
+			updateGlobalGrid();
+			return;
+		};
+	};
+	//else... valid move, move the piece
 	for (var i = 0; i < this.locations.length; i++){
 		this.locations[i].y++;
-	}
+	};
 	//debug
 	//console.log("after this.locations[0].x--");
 	//console.log("Last location: (" + this.lastLocations[0].x + "," + this.lastLocations[0].y + "); This location: (" + this.locations[0].x + "," + this.locations[0].y + ")."); 
@@ -401,6 +597,23 @@ Piece.prototype.moveDown = function() {
 };
 
 
+//HELPER FUNCTIONS--------------------------------------------------------------------------------------
+
+
+Piece.prototype.setPiece = function() {
+	//add piece to background grid
+	for (var i = 0; i < this.locations.length; i++)
+	{
+		//debug
+		console.log("setting locations[" + i + "] : ");
+		console.log(this.locations[i]);
+		backgroundGrid[this.locations[i].x][this.locations[i].y] = GREY;
+	}
+	//create new client piece
+	this.client.set('piece', new Piece((Math.floor(Math.random() * 7) + 1), this.client));
+}
+
+//TODO remove this
 function hack(){
 	this.loggedIn = false;
 }
