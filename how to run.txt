@@ -1,0 +1,9 @@
+in putty, navigate to Project-2/code directory...
+run: node server.js
+
+
+open a browser and go to: compute.cse.tamu.edu:30303
+
+when 2 players type their names and click 'Connect', the game begins.
+
+
