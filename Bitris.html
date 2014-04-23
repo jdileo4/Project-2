@@ -44,10 +44,11 @@
 			
 		}
 		.instructions{
-			width: 800px;
-			height: 50px;
-			padding:20px;
+			height: 425px;
+			width: 250px;
+			padding:20px 20px 20px 20px;
 			text-align: center;
+			vertical-align: center;
 		}
 		.boundTop{
 			border-top: 1px solid black !important;
@@ -226,44 +227,37 @@
 			</td>
 			<td class='nodisp'>
 				<!-- create a table for enemy/team, give them IDs according to grid number (form of: e5,12 ) -->
-				<table>
-					<script>
-						for(var i=0; i<17; i++){
-							document.write("<tr>");
-							for(var j=0; j<17; j++){
-								var classModifiers = "enemy";
-								if(i==4 && j<13){
-									classModifiers += " boundTop";
-								}
-								if((i==16 && j<13) || (i==3 && j<13)){
-									classModifiers += " boundBottom";
-								}
-								if((i>=4 && j==0) || (i>=4 && j==13)){
-									classModifiers += " boundLeft";
-								}
-								if(i>=4 && j==12){
-									classModifiers += " boundRight";
-								}
-								document.write("<td class='"+ classModifiers +"'><img class='enemy' id='e" + j + "," + i + "' src='' /></td>");
-							}
-							document.write("</tr>");
-						}
-					</script>
+				<table class="instructions">
+					<tr>
+						<td>
+							<h1><b>Rules</b></h1>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<b>Fill up the square!</b><br><br>
+							The more blocks that end up fitting inside the square, the more points you will recieve.<br><br>
+							Remember to cooperate when placing blocks!
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<b style="font-size:xx-large;">How to Play</b>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<b style="font-size:x-large;">⇦ ⇩ ⇨</b>
+							<p>Move piece left/down/right</p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<p style="font-size:x-large;"><b>Z X</b></p>
+							<p>Rotate piece counter/clockwise
+						</td>
+					</tr>
 				</table>
-			</td>
-		</tr>
-	</table>
-	<br><br>
-	<table class='instructions'>
-		<tr>
-			<td>
-				<b>How To Play</b>
-			</td>
-			<td>
-				<b>⇦ ⇩ ⇨</b> Move piece left/down/right
-			</td>
-			<td>
-				<b>Z X</b> - Rotate piece counterclockwise/clockwise
 			</td>
 		</tr>
 	</table>
