@@ -786,14 +786,22 @@ Piece.prototype.rotateClockwise = function() {
 	var validMove = true;
 	//debug
 	console.log("rotateClockwise");
+
+	//TODO: check if valid
 	
 	//calculate where locations will be and see if there are already non-zero values there
 		//if there are, it's invalid
 		//if not, set locations equal to those values
 	
-	//for (
-	
-	
+		//if it is, move the piece
+	if (validMove){
+		for (var i = 0; i < this.locations.length; i++){
+			var tempx = this.locations[i].x;
+			var tempy = this.locations[i].y;
+			this.locations[i].x = -1*tempy;
+			this.locations[i].y = tempx;
+		}
+	}
 }
 	
 
