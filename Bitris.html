@@ -111,9 +111,16 @@
 			document.getElementById("options").innerHTML = "Screen Name: <input type='text' id='loginName' /><button type='button' onClick='processConnect();'>Connect</button>";
 		}
 		
+		var showInitJoin = true;
+		var loginName = "";
 		var localGrid = new Array();
 		
 		socket.on('syncUpdate',
+			if(showInitJoin == true){
+				document.getElementById("message").innerHTML = "<b>Currently playing!</b>"
+				document.getElementById("options").innerHTML = "Logged in as: " + loginName;
+				showInitJoin = false;
+			}
 			function(grid){
 				localGrid = grid;
 				for(var j=0; j<17; j++)
@@ -136,6 +143,7 @@
 		}
 		function processConnect(){
 			//alert(document.getElementById("loginName").value);
+			loginName = document.getElementById("loginName").value;
 			var message = {};
 			message.user_name = document.getElementById("loginName").value;
 			socket.emit('login', message);
