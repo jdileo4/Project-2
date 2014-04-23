@@ -90,21 +90,11 @@
 		
 		//called from body tag; happens on load
 		function onLoadFunction(){
-			
-			//temporary filling enemy grid function.
-			for(var i=0; i<17; i++){
-				for(var j=0; j<17; j++){
-					var randomnumber = Math.floor(Math.random()*10)
-					if(randomnumber > 0){
-						document.getElementById("e" + i + "," + j).src = "tetrisenemy.png";
-					}
-				}
-			}
 			//todo: replace with timed function which refreshes to check on user.
-			document.getElementById("options").innerHTML = "Nobody else is online right now.";
-			formNameMe();
+			//document.getElementById("options").innerHTML = "Nobody else is online right now.";
+			//formNameMe();
 			//temporary (clientonly) check to the debug function
-			updateDEBUG();
+			//updateDEBUG();
 		}
 		
 		function formNameMe(){
@@ -278,7 +268,7 @@
 			</td>
 			<td>
 				<!-- options/form side of options box, can be updated through JS -->
-				<span id="options"></span>
+				<span id="options">Screen Name: <input type='text' id='loginName' /><button type='button' onClick='processConnect();'>Connect</button></span>
 			</td>
 		</tr>
 	</table>
