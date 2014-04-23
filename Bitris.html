@@ -14,7 +14,7 @@
 			border: 1px solid #ECECEC;
 			text-align: center;
 			display: inline-block;
-			padding: 0px;
+			padding: 1px;
 		}
 		td{
 			border: 1px solid #ECECEC;
@@ -60,6 +60,9 @@
 		}
 		.boundRight{
 			border-right:1px solid black !important;
+		}
+		.imgborder{
+			border: 0px !important;
 		}
 	</style>
 	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
@@ -198,21 +201,19 @@
 							document.write("<tr>");
 							for(var j=0; j<17; j++){
 								var classModifiers = "friendly";
-								/* Scott (me) - this is supposed to enclose the play area but does not work right now - see corresponding CSS styles
-								if(i==4 && j>3){
+								if(i==4 && j<13){
 									classModifiers += " boundTop";
 								}
-								if(i==16 && j>3){
+								if((i==16 && j<13) || (i==3 && j<13)){
 									classModifiers += " boundBottom";
 								}
-								if(i>=4 && j==4){
+								if((i>=4 && j==0) || (i>=4 && j==13)){
 									classModifiers += " boundLeft";
 								}
-								if(i>=4 && j==16){
+								if(i>=4 && j==12){
 									classModifiers += " boundRight";
 								}
-								*/
-								document.write("<td class='" + classModifiers + "'><img class='friendly' id='f" + j + "," + i + "' src='' /></td>");
+								document.write("<td class='" + classModifiers + "'><img class='friendly imgborder' id='f" + j + "," + i + "' src='' /></td>");
 							}
 							document.write("</tr>");
 						}
@@ -230,7 +231,20 @@
 						for(var i=0; i<17; i++){
 							document.write("<tr>");
 							for(var j=0; j<17; j++){
-								document.write("<td class='enemy'><img class='enemy' id='e" + j + "," + i + "' src='' /></td>");
+								var classModifiers = "enemy";
+								if(i==4 && j<13){
+									classModifiers += " boundTop";
+								}
+								if((i==16 && j<13) || (i==3 && j<13)){
+									classModifiers += " boundBottom";
+								}
+								if((i>=4 && j==0) || (i>=4 && j==13)){
+									classModifiers += " boundLeft";
+								}
+								if(i>=4 && j==12){
+									classModifiers += " boundRight";
+								}
+								document.write("<td class='"+ classModifiers +"'><img class='enemy' id='e" + j + "," + i + "' src='' /></td>");
 							}
 							document.write("</tr>");
 						}
