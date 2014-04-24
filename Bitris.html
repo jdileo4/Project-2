@@ -123,8 +123,11 @@
 		
 		socket.on('pointUpdate',
 			function(points){
+				//debug
+				//alert("'pointUpdate' heard by html, updating localPoints to = " +
+				//		points);
 				localPoints = points;
-				document.getElementById("message").innerHTML = "<b>Points: <span id='pointsDisplay'>" + localPoints + "</span></b>";
+				document.getElementById("message").innerHTML = "<b>Points: <span id='pointsDisplay'>" + localPoints + "/ 42</span></b>";
 			}
 		);
 		

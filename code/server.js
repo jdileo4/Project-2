@@ -8,7 +8,8 @@
 //-----------------------------------------
 
 //static variables
-var GLOBAL_GRID_SIZE = 17
+var GLOBAL_GRID_SIZE = 17;
+var PLAY_AREA_SIZE = 13;
 
 var RED = 1;
 var ORANGE = 2;
@@ -91,6 +92,9 @@ function handler(request, response) {
 //--------------------------------------
 //Global variables
 //--------------------------------------
+
+//keep track of points earned per game
+var teamPoints = 0;
 //timer object
 var interval;
 //(when someone connects, add these event handlers to that client)
@@ -166,7 +170,24 @@ io.sockets.on('connection', function(client) {
 			
 			//debug
 			console.log("Login successful: " + message.user_name);
-		
+
+			//setup--------------------------------------------------------
+			client.get('rotated', function(err, result){
+				if (result){
+
+					result.client.emit('setup', {
+						rotated : result.rotated,
+						GLOBAL_GRID_SIZE : GLOBAL_GRID_SIZE,
+						PLAY_AREA_SIZE : PLAY_AREA_SIZE
+					});
+
+				}
+				else{
+					console.log(err);
+				}
+			});
+
+
 			//TIMER INTERVAL----------------------------------------------------------------------------
 			//TODO: have this instead under client.on('ready')
 			if (clientArray.length == 2){
@@ -257,7 +278,7 @@ io.sockets.on('connection', function(client) {
 							{
 								if (rotated)
 								{
-									result.moveUp();
+									result.moveDown();
 								}
 								else
 								{
@@ -292,7 +313,7 @@ io.sockets.on('connection', function(client) {
 						{
 							if (rotated)
 							{
-								result.moveDown();
+								result.moveUp();
 							}
 							else
 							{
@@ -960,6 +981,12 @@ Piece.prototype.setPiece = function() {
 	}
 	//create new client piece
 	this.client.set('piece', new Piece((Math.floor(Math.random() * 7) + 1), this.client));
+	//team gets points!
+	teamPoints++;
+	for (var i = 0; i < clientArray.length; i++){
+		var client = clientArray[i];
+		client.emit('pointUpdate', teamPoints);
+	}
 }
 
 //send either rotated or non-rotated globalGrid to clients via sockets
@@ -988,7 +1015,9 @@ var updateClients = function()
 					{
 						for (var y = 0; y < globalGrid.length; y++)
 						{
-							rotatedGrid[y][(16-x)] = globalGrid[x][y];
+							//not really "rotated" anymore...more like flipped
+							//TODO: change all names "rotated" to "flipped"
+							rotatedGrid[16-y][(16-x)] = globalGrid[x][y];
 						}
 					}
 					//send rotated grid to client
