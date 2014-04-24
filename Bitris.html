@@ -106,12 +106,12 @@
 		var localGrid = new Array();
 		
 		socket.on('syncUpdate',
-			if(showInitJoin == true){
-				document.getElementById("message").innerHTML = "<b>Currently playing!</b>"
-				document.getElementById("options").innerHTML = "Logged in as: " + loginName;
-				showInitJoin = false;
-			}
 			function(grid){
+				if(showInitJoin == true){
+					document.getElementById("message").innerHTML = "<b>Currently playing!</b>"
+					document.getElementById("options").innerHTML = "Logged in as: " + loginName;
+					showInitJoin = false;
+				}
 				localGrid = grid;
 				for(var j=0; j<17; j++)
 					for(var i=0; i<17;i++)
