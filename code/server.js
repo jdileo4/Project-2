@@ -366,6 +366,8 @@ io.sockets.on('connection', function(client) {
 	});
 
 	client.on('rotateClockwise', function() {
+		//debug
+		console.log("'rotateClockwise' heard");
 		client.get('loggedIn', function(err, loggedIn)
 				{	
 					//debug
@@ -376,6 +378,26 @@ io.sockets.on('connection', function(client) {
 							function(err, result)
 							{
 								result.rotateClockwise();
+							}
+						);
+					}
+				
+		});
+	});
+
+	client.on('rotateCounter', function() {
+		//debug
+		console.log("'rotateCounter' heard");
+		client.get('loggedIn', function(err, loggedIn)
+				{	
+					//debug
+					//console.log("logged in = " + loggedIn);
+					if (loggedIn == true)
+					{
+						client.get('piece', 
+							function(err, result)
+							{
+								result.rotateCounter();
 							}
 						);
 					}
@@ -798,14 +820,55 @@ Piece.prototype.moveUp = function() {
 Piece.prototype.rotateClockwise = function() {
 	var temp = JSON.parse(JSON.stringify(this.locations));
 	this.lastLocations = temp;
-	var temp1 = JSON.parse(JSON.stringify(this.locations));
-	this.possLocations = temp1;
-
+	var possLocations = JSON.parse(JSON.stringify(this.locations));
+	//centeredLocations with origin of locations[2]
+	var centeredLocations = JSON.parse(JSON.stringify(this.locations));
+	for (var i = 0; i < centeredLocations.length; i++){
+		centeredLocations[i].x = this.locations[i].x - this.locations[2].x;
+		centeredLocations[i].y = this.locations[i].y - this.locations[2].y;
+	}
 	var validMove = true;
-	//debug
-	console.log("rotateClockwise");
 
-	//TODO: check if valid
+	//debug
+	console.log("Piece.rotateClockwise()");
+
+	//calculate possible locations, check if valid
+	for (var i = 0; i < possLocations.length; i++){
+		var tempx = centeredLocations[i].x;
+		var tempy = centeredLocations[i].y;
+
+		//HERES THE MATH!! -------------------------------------------
+		centeredLocations[i].x = -1*tempy;
+		centeredLocations[i].y = tempx;
+		//------------------------------------------------------------
+
+		possLocations[i].x = centeredLocations[i].x + this.locations[2].x;
+		possLocations[i].y = centeredLocations[i].y + this.locations[2].y;
+
+		//check if possLocations overlaps with:
+			//left wall
+			//right wall
+			//bottom wall
+			//background grid pieces
+
+		if (possLocations[i].x <= 0){
+			validMove = false;
+		}
+		if (possLocations[i].x >= GLOBAL_GRID_SIZE - 1){
+			validMove = false;
+		}
+		if (possLocations[i].y >= GLOBAL_GRID_SIZE - 1){
+			validMove = false;
+		}
+		//debug
+		//console.log("Piece.rotateClockwise(): referencing backgroundGrid[" +
+		//			possLocations[i].x + "][" + possLocations[i].y + "]");
+		//console.log("(backgroundGrid.length = " + backgroundGrid.length + ")");
+		if (validMove && (backgroundGrid[possLocations[i].x][possLocations[i].y] != 0)){
+			validMove = false;
+		}
+	}
+
 	
 	//calculate where locations will be and see if there are already non-zero values there
 		//if there are, it's invalid
@@ -813,13 +876,73 @@ Piece.prototype.rotateClockwise = function() {
 	
 		//if it is, move the piece
 	if (validMove){
-		for (var i = 0; i < this.locations.length; i++){
-			var tempx = this.locations[i].x;
-			var tempy = this.locations[i].y;
-			this.locations[i].x = -1*tempy;
-			this.locations[i].y = tempx;
+		this.locations = JSON.parse(JSON.stringify(possLocations));
+	}
+	updateGlobalGrid();
+}
+
+Piece.prototype.rotateCounter = function() {
+	var temp = JSON.parse(JSON.stringify(this.locations));
+	this.lastLocations = temp;
+	var possLocations = JSON.parse(JSON.stringify(this.locations));
+	//centeredLocations with origin of locations[2]
+	var centeredLocations = JSON.parse(JSON.stringify(this.locations));
+	for (var i = 0; i < centeredLocations.length; i++){
+		centeredLocations[i].x = this.locations[i].x - this.locations[2].x;
+		centeredLocations[i].y = this.locations[i].y - this.locations[2].y;
+	}
+	var validMove = true;
+
+	//debug
+	console.log("Piece.rotateCounter()");
+
+	//calculate possible locations, check if valid
+	for (var i = 0; i < possLocations.length; i++){
+		var tempx = centeredLocations[i].x;
+		var tempy = centeredLocations[i].y;
+
+		//HERES THE MATH!! -------------------------------------------
+		centeredLocations[i].x = tempy;
+		centeredLocations[i].y = -1*tempx;
+		//------------------------------------------------------------
+
+		possLocations[i].x = centeredLocations[i].x + this.locations[2].x;
+		possLocations[i].y = centeredLocations[i].y + this.locations[2].y;
+
+		//check if possLocations overlaps with:
+			//left wall
+			//right wall
+			//bottom wall
+			//background grid pieces
+
+		if (possLocations[i].x <= 0){
+			validMove = false;
+		}
+		if (possLocations[i].x >= GLOBAL_GRID_SIZE - 1){
+			validMove = false;
+		}
+		if (possLocations[i].y >= GLOBAL_GRID_SIZE - 1){
+			validMove = false;
+		}
+		//debug
+		//console.log("Piece.rotateClockwise(): referencing backgroundGrid[" +
+		//			possLocations[i].x + "][" + possLocations[i].y + "]");
+		//console.log("(backgroundGrid.length = " + backgroundGrid.length + ")");
+		if (validMove && (backgroundGrid[possLocations[i].x][possLocations[i].y] != 0)){
+			validMove = false;
 		}
 	}
+
+	
+	//calculate where locations will be and see if there are already non-zero values there
+		//if there are, it's invalid
+		//if not, set locations equal to those values
+	
+		//if it is, move the piece
+	if (validMove){
+		this.locations = JSON.parse(JSON.stringify(possLocations));
+	}
+	updateGlobalGrid();
 }
 	
 
