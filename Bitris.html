@@ -181,6 +181,14 @@
 				//emit event down
 				socket.emit('moveDown');
 			}
+			if(event.keyCode == 88){
+				// rotateClockwise()
+				socket.emit('rotateClockwise');
+			}
+			if(event.keyCode == 90){
+				// rotateClockwise()
+				socket.emit('rotateCounter');
+			}
 		}
 	</script>
 </head>

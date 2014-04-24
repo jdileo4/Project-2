@@ -365,6 +365,24 @@ io.sockets.on('connection', function(client) {
 		});
 	});
 
+	client.on('rotateClockwise', function() {
+		client.get('loggedIn', function(err, loggedIn)
+				{	
+					//debug
+					//console.log("logged in = " + loggedIn);
+					if (loggedIn == true)
+					{
+						client.get('piece', 
+							function(err, result)
+							{
+								result.rotateClockwise();
+							}
+						);
+					}
+				
+		});
+	});
+
 });
 
 
