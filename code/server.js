@@ -84,7 +84,7 @@ function handler(request, response) {
 			});
 		}
 		response.end(content);
-	});
+		});
 	}
 }
 
@@ -152,6 +152,8 @@ io.sockets.on('connection', function(client) {
 			clientArray.push(client);
 
 			//CLIENT ATTRIBUTES------------------------------------------------------------------
+			client.set('color', {color : clientArray.length + 3});
+			//client.set('color', JSON.parse(JSON.stringify({color : clientArray.length + 5})));
 			client.set('piece', new Piece((Math.floor(Math.random() * 7) + 1), client));
 			client.set('loggedIn', true);
 			client.set('interval', {interval : 0, client : client});
@@ -486,6 +488,63 @@ function updateGlobalGrid() {
 	
 	updateClients();
 };
+//send either rotated or non-rotated globalGrid to clients via sockets
+//emits event 'syncUpdate'
+
+var updateClients = function()
+{
+//	var temp = JSON.parse(JSON.stringify(globalGrid));
+//	var rotatedGrid = temp;
+
+	var rotatedGrid = new Array(GLOBAL_GRID_SIZE);
+	for (var i = 0; i < GLOBAL_GRID_SIZE; i++) {
+		rotatedGrid[i] = new Array(GLOBAL_GRID_SIZE);
+	}
+	
+	//if rotated client, rotate globalGrid and send it to clients
+	for (var i = 0; i < clientArray.length; i++)
+	{
+		var client = clientArray[i];	//TODO try just doing clientArray[i].get()
+		client.get('rotated', function(err, result){
+			if (result)
+			{
+				if (result.rotated)		//client is rotated
+				{
+					//create rotated displayGrid
+					for (var x = 0; x < globalGrid.length; x++)
+					{
+						for (var y = 0; y < globalGrid.length; y++)
+						{
+							//not really "rotated" anymore...more like flipped
+							//TODO: change all names "rotated" to "flipped"
+							rotatedGrid[16-y][(16-x)] = globalGrid[x][y];
+						}
+					}
+					//send rotated grid to client
+					client.emit('syncUpdate', rotatedGrid);
+				}
+				else		//client is not rotated
+				{
+					//send regular globalGrid to client
+					client.emit('syncUpdate', globalGrid);
+				}
+			}
+			else
+			{
+				console.log(err);
+			}
+		});
+	}
+};
+
+var endGame = function()
+{
+	for (var i =0; i < clientArray.length; i++){
+		clientArray[i].emit('endGame');
+	}
+
+
+}
 
 
 //---------------------------------------------------------------------------------------------
@@ -495,7 +554,19 @@ function updateGlobalGrid() {
 function Piece(type, client) {
 	//properties
 	this.client = client;
-	this.color = type;
+	var tempColor;
+	this.client.get('color', function(err, result){
+		console.log("trying to create piece of color result.color = " + result.color);
+		if (result){
+			tempColor = result.color;
+		}
+		else{
+			console.log(err);
+		}
+	});
+	console.log("trying to create piece of color tempColor = " + tempColor);
+	this.color = tempColor;
+	console.log("trying to create piece of color this.color = " + this.color);
 	this.locations = [];
 	this.lastLocations = [];
 	//piece shape
@@ -979,8 +1050,39 @@ Piece.prototype.setPiece = function() {
 		console.log(this.locations[i]);
 		backgroundGrid[this.locations[i].x][this.locations[i].y] = GREY;
 	}
+	//check if pieces are out of the play area, if so, end the game
+		//above play area
+	for (var x = 0; x < GLOBAL_GRID_SIZE; x++){
+		for (var y = 0; y < 4; y++){
+			if (backgroundGrid[x][y] != 0){
+				endGame();
+			}
+		}
+	}
+		//to the right of play area
+	for (var x = GLOBAL_GRID_SIZE-5; x < GLOBAL_GRID_SIZE; x++){
+		for (var y = 4; y < GLOBAL_GRID_SIZE; y++){
+			if (backgroundGrid[x][y] != 0){
+				endGame();
+			}
+		}
+	}
+
 	//create new client piece
 	this.client.set('piece', new Piece((Math.floor(Math.random() * 7) + 1), this.client));
+	// this.client.get('color', function(err, result){
+	// 	if (result){
+	// 		//debug
+	// 		console.log("setPiece(): Trying to create new piece with color = " + result.color);
+
+	// 		this.client.set('piece', new Piece((Math.floor(Math.random() * 7) + 1), 
+	// 											result.color,
+	// 											this.client));
+	// 	}
+	// 	else{
+	// 		console.log(err);
+	// 	}
+	// });
 	//team gets points!
 	teamPoints++;
 	for (var i = 0; i < clientArray.length; i++){
@@ -989,50 +1091,3 @@ Piece.prototype.setPiece = function() {
 	}
 }
 
-//send either rotated or non-rotated globalGrid to clients via sockets
-//emits event 'syncUpdate'
-var updateClients = function()
-{
-//	var temp = JSON.parse(JSON.stringify(globalGrid));
-//	var rotatedGrid = temp;
-
-	var rotatedGrid = new Array(GLOBAL_GRID_SIZE);
-	for (var i = 0; i < GLOBAL_GRID_SIZE; i++) {
-		rotatedGrid[i] = new Array(GLOBAL_GRID_SIZE);
-	}
-	
-	//if rotated client, rotate globalGrid and send it to clients
-	for (var i = 0; i < clientArray.length; i++)
-	{
-		var client = clientArray[i];	//TODO try just doing clientArray[i].get()
-		client.get('rotated', function(err, result){
-			if (result)
-			{
-				if (result.rotated)		//client is rotated
-				{
-					//create rotated displayGrid
-					for (var x = 0; x < globalGrid.length; x++)
-					{
-						for (var y = 0; y < globalGrid.length; y++)
-						{
-							//not really "rotated" anymore...more like flipped
-							//TODO: change all names "rotated" to "flipped"
-							rotatedGrid[16-y][(16-x)] = globalGrid[x][y];
-						}
-					}
-					//send rotated grid to client
-					client.emit('syncUpdate', rotatedGrid);
-				}
-				else		//client is not rotated
-				{
-					//send regular globalGrid to client
-					client.emit('syncUpdate', globalGrid);
-				}
-			}
-			else
-			{
-				console.log(err);
-			}
-		});
-	}
-}
