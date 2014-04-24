@@ -108,7 +108,7 @@
 		socket.on('syncUpdate',
 			function(grid){
 				if(showInitJoin == true){
-					document.getElementById("message").innerHTML = "<b>Currently playing!</b>"
+					document.getElementById("message").innerHTML = "<b>Points: <span id='pointsDisplay'>" + localPoints + "</span></b>";
 					document.getElementById("options").innerHTML = "Logged in as: " + loginName;
 					showInitJoin = false;
 				}
@@ -116,6 +116,15 @@
 				for(var j=0; j<17; j++)
 					for(var i=0; i<17;i++)
 						grid[i][j] > 0 ? document.getElementById("f" + i + "," + j).src = "block" + grid[i][j] + ".png" : document.getElementById("f" + i + "," + j).src = "";
+			}
+		);
+		
+		var localPoints = 0;
+		
+		socket.on('pointUpdate',
+			function(points){
+				localPoints = points;
+				document.getElementById("message").innerHTML = "<b>Points: <span id='pointsDisplay'>" + localPoints + "</span></b>";
 			}
 		);
 		
