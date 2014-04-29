@@ -130,6 +130,10 @@
 				document.getElementById("message").innerHTML = "<b>Points: <span id='pointsDisplay'>" + localPoints + "/ 42</span></b>";
 			}
 		);
+
+		socket.on('endGame', function(){
+			alert("Good game!\nYour score: " + localPoints);
+		})
 		
 		//temporary (clientonly) updater for local 1x1 piece movement
 		function updateDEBUG(){

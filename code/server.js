@@ -431,9 +431,9 @@ io.sockets.on('connection', function(client) {
 });
 
 
-//-----------------------------------------
+//------------------------------------------------------------------------
 //Main code
-//-----------------------------------------
+//------------------------------------------------------------------------
 
 //make sure globalGrid is up to date
 function updateGlobalGrid() {
@@ -1060,7 +1060,7 @@ Piece.prototype.setPiece = function() {
 		}
 	}
 		//to the right of play area
-	for (var x = GLOBAL_GRID_SIZE-5; x < GLOBAL_GRID_SIZE; x++){
+	for (var x = GLOBAL_GRID_SIZE-4; x < GLOBAL_GRID_SIZE; x++){
 		for (var y = 4; y < GLOBAL_GRID_SIZE; y++){
 			if (backgroundGrid[x][y] != 0){
 				endGame();
